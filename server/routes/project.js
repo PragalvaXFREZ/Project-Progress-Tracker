@@ -188,4 +188,30 @@ router.delete('/:projectId', async (req, res) => {
   }
 });
 
+// Add this new route for updating project status
+router.patch('/:projectId/status', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    if (!['pending', 'planning', 'in-progress', 'completed'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    project.status = status;
+    await project.save();
+
+    res.json(project);
+  } catch (error) {
+    console.error('Error updating project status:', error);
+    res.status(500).json({ error: 'Error updating project status' });
+  }
+});
+
 module.exports = router;

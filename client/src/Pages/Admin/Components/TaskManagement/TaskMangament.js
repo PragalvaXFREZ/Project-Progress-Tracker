@@ -25,6 +25,8 @@ const TaskManagement = () => {
     assignedTo: '',
     deadline: '',
   });
+  const [projectStatus, setProjectStatus] = useState('');
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
 
   // Fetch functions
   const fetchProjectDetails = useCallback(async () => {
@@ -194,6 +196,44 @@ const TaskManagement = () => {
     }
   };
 
+  const handleStatusUpdate = async (newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update project status');
+      }
+  
+      const updatedProject = await response.json();
+      setProjectDetails(updatedProject);
+      setProjectStatus(updatedProject.status);
+    } catch (error) {
+      console.error('Error updating project status:', error);
+      alert('Failed to update project status');
+    }
+  };
+
+  const handleStatusChange = (newStatus) => {
+    if (newStatus === 'completed') {
+      setShowCompleteModal(true);
+    } else {
+      handleStatusUpdate(newStatus);
+    }
+  };
+
+  const handleProjectCompletion = async (confirm) => {
+    if (confirm) {
+      await handleStatusUpdate('completed');
+    }
+    setShowCompleteModal(false);
+  };
+
   // Error boundary render
   if (error) {
     return (
@@ -235,6 +275,22 @@ const TaskManagement = () => {
                     new Date(projectDetails.createdAt).toLocaleDateString() : 
                     'Unknown date'}
                 </p>
+              </div>
+              <div className="project-status">
+                <h4>Project Status: {projectDetails?.status}</h4>
+                {projectDetails?.status !== 'completed' && (
+                  <select
+                    value={projectStatus}
+                    onChange={(e) => handleStatusChange(e.target.value)}
+                    className="status-select"
+                  >
+                    <option value="">Change Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="planning">Planning</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                )}
               </div>
               <div className="project-actions">
                 <button 
@@ -342,6 +398,28 @@ const TaskManagement = () => {
             </div>
           )}
         </div>
+        {showCompleteModal && (
+          <div className="completion-modal">
+            <div className="completion-modal-content">
+              <h3>Complete Project</h3>
+              <p>Are you sure this project is complete?</p>
+              <div className="completion-modal-actions">
+                <button
+                  className="complete-confirm-btn"
+                  onClick={() => handleProjectCompletion(true)}
+                >
+                  Yes, Complete Project
+                </button>
+                <button
+                  className="complete-cancel-btn"
+                  onClick={() => handleProjectCompletion(false)}
+                >
+                  No, Keep in Progress
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
