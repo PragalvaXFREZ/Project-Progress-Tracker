@@ -1,14 +1,24 @@
-import React, { useState, useEffect,useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import NavBar from '../Nav Bar/NavBar';
 import './TaskManagement.css';
 
 const TaskManagement = () => {
   const { projectId } = useParams();
-  const navigate = useNavigate(); // Add this
+  const navigate = useNavigate();
+  
+  // State declarations
   const [tasks, setTasks] = useState([]);
   const [projectMembers, setProjectMembers] = useState([]);
-  const [projectDetails, setProjectDetails] = useState(null); // Add this
+  const [projectDetails, setProjectDetails] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState({
+    projectDetails: false,
+    tasks: false,
+    members: false
+  });
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -16,15 +26,13 @@ const TaskManagement = () => {
     deadline: '',
   });
 
- 
-
+  // Fetch functions
   const fetchProjectDetails = useCallback(async () => {
     try {
+      setIsLoading(prev => ({ ...prev, projectDetails: true }));
       console.log('Fetching project details for ID:', projectId);
-      // Updated URL to match the correct endpoint
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}`);
       const data = await response.json();
-      console.log('Project details response:', data);
       
       if (response.ok) {
         setProjectDetails(data);
@@ -33,26 +41,34 @@ const TaskManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching project details:', error);
+      setError(error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, projectDetails: false }));
     }
   }, [projectId]);
 
-
-
   const fetchTasks = useCallback(async () => {
     try {
+      setIsLoading(prev => ({ ...prev, tasks: true }));
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks`);
       const data = await response.json();
+      
       if (response.ok) {
         setTasks(data);
+      } else {
+        throw new Error(data.error || 'Failed to fetch tasks');
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
+      setTasks([]);
+    } finally {
+      setIsLoading(prev => ({ ...prev, tasks: false }));
     }
   }, [projectId]);
 
   const fetchProjectMembers = useCallback(async () => {
     try {
-      console.log('Fetching members for project:', projectId);
+      setIsLoading(prev => ({ ...prev, members: true }));
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}/members`);
       
       if (!response.ok) {
@@ -60,29 +76,54 @@ const TaskManagement = () => {
       }
       
       const data = await response.json();
-      console.log('Project members data:', data);
-      
-      // Set the members directly since the backend sends the members array
       setProjectMembers(data);
     } catch (error) {
       console.error('Error fetching project members:', error);
-      // Initialize empty array if there's an error
       setProjectMembers([]);
+    } finally {
+      setIsLoading(prev => ({ ...prev, members: false }));
     }
   }, [projectId]);
 
-useEffect(() => {
-  fetchProjectDetails();
-  fetchTasks();
-  fetchProjectMembers();
-}, [fetchProjectDetails, fetchTasks, fetchProjectMembers]);
+  // Effect hooks
+  useEffect(() => {
+    let mounted = true;
 
-// Separate useEffect for logging if needed
-useEffect(() => {
-  console.log('Current project details:', projectDetails);
-  console.log('Current project members:', projectMembers);
-}, [projectDetails, projectMembers]);
+    const fetchData = async () => {
+      try {
+        if (mounted) {
+          await Promise.all([
+            fetchProjectDetails(),
+            fetchTasks(),
+            fetchProjectMembers()
+          ]);
+        }
+      } catch (error) {
+        if (mounted) {
+          console.error('Error fetching data:', error);
+        }
+      }
+    };
 
+    fetchData();
+
+    return () => {
+      mounted = false;
+    };
+  }, [fetchProjectDetails, fetchTasks, fetchProjectMembers]);
+
+  // Validation function
+  const validateTask = (task) => {
+    if (!task.title.trim()) throw new Error('Title is required');
+    if (!task.description.trim()) throw new Error('Description is required');
+    if (!task.assignedTo) throw new Error('Please assign the task to a member');
+    if (!task.deadline) throw new Error('Deadline is required');
+    
+    const deadlineDate = new Date(task.deadline);
+    if (deadlineDate < new Date()) throw new Error('Deadline cannot be in the past');
+  };
+
+  // Handler functions
   const handleBack = () => {
     navigate('/admin');
   };
@@ -90,6 +131,8 @@ useEffect(() => {
   const handleCreateTask = async (e) => {
     e.preventDefault();
     try {
+      validateTask(newTask);
+      
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks`, {
         method: 'POST',
         headers: {
@@ -98,8 +141,9 @@ useEffect(() => {
         body: JSON.stringify(newTask),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
         setTasks([...tasks, data]);
         setNewTask({
           title: '',
@@ -108,36 +152,137 @@ useEffect(() => {
           deadline: '',
         });
         alert('Task created successfully');
+      } else {
+        throw new Error(data.error || 'Failed to create task');
       }
     } catch (error) {
       console.error('Error creating task:', error);
-      alert('Failed to create task');
+      alert('Failed to create task: ' + error.message);
     }
   };
 
+  const handleDeleteProject = async () => {
+    try {
+      if (deleteConfirmation !== projectDetails?.name) {
+        alert("Project name doesn't match");
+        return;
+      }
+
+      console.log('Attempting to delete project:', projectId);
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      // First check if the response is not ok
+      if (!response.ok) {
+        // Only try to parse error response as JSON
+        const errorData = await response.json().catch(() => ({
+          error: 'Failed to delete project'
+        }));
+        throw new Error(errorData.error || 'Failed to delete project');
+      }
+      
+      // If response is ok, don't try to parse it
+      alert('Project deleted successfully');
+      navigate('/admin');
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      alert(`Failed to delete project: ${error.message}`);
+    }
+  };
+
+  // Error boundary render
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>Something went wrong</h2>
+        <p>{error.message}</p>
+        <button onClick={() => {
+          setError(null);
+          navigate('/admin');
+        }}>
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  // Main render
   return (
     <div>
       <NavBar userEmail={localStorage.getItem('userEmail')} />
       <div className="task-management">
-        <h2>Task Management</h2>
+        <h2>Manage Your Project</h2>
         <div className="task-management-header">
           <button onClick={handleBack} className="back-button">
             ← Back to Dashboard
           </button>
-          {!projectDetails ? (
+          {isLoading.projectDetails ? (
             <div className="loading">Loading project details...</div>
           ) : (
             <div className="project-details">
-              <h2>{projectDetails.name || 'Unnamed Project'}</h2>
-              <p className="project-description">{projectDetails.description || 'No description available'}</p>
+              <h2>{projectDetails?.name || 'Unnamed Project'}</h2>
+              <p className="project-description">
+                {projectDetails?.description || 'No description available'}
+              </p>
               <div className="project-meta">
-                <p>Total Members: {projectDetails.members?.length || 0}</p>
-                <p>Created by: {projectDetails.createdBy?.email || 'Unknown'}</p>
-                <p>Created: {new Date(projectDetails.createdAt).toLocaleDateString()}</p>
+                <p>Total Members: {projectDetails?.members?.length || 0}</p>
+                <p>Created by: {projectDetails?.createdBy?.email || 'Unknown'}</p>
+                <p>Created: {projectDetails?.createdAt ? 
+                    new Date(projectDetails.createdAt).toLocaleDateString() : 
+                    'Unknown date'}
+                </p>
+              </div>
+              <div className="project-actions">
+                <button 
+                  className="delete-project-btn"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  Delete Project
+                </button>
               </div>
             </div>
           )}
         </div>
+
+        {/* Delete Modal */}
+        {showDeleteModal && (
+          <div className="delete-modal">
+            <div className="delete-modal-content">
+              <h3>Delete Project</h3>
+              <p>This action cannot be undone. Please type <strong>{projectDetails?.name}</strong> to confirm.</p>
+              <input
+                type="text"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                placeholder="Type project name to confirm"
+              />
+              <div className="delete-modal-actions">
+                <button
+                  className="delete-confirm-btn"
+                  onClick={handleDeleteProject}
+                  disabled={deleteConfirmation !== projectDetails?.name}
+                >
+                  Delete Project
+                </button>
+                <button
+                  className="delete-cancel-btn"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteConfirmation('');
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Task Form */}
         <div className="create-task">
           <h3>Create New Task</h3>
           <form onSubmit={handleCreateTask}>
@@ -154,18 +299,18 @@ useEffect(() => {
               onChange={(e) => setNewTask({...newTask, description: e.target.value})}
               required
             />
-             <select
-                value={newTask.assignedTo}
-                onChange={(e) => setNewTask({...newTask, assignedTo: e.target.value})}
-                required
-              >
-                <option value="">Assign To</option>
-                {Array.isArray(projectMembers) && projectMembers.map(member => (
-                  <option key={member._id} value={member._id}>
-                    {member.email}
-                  </option>
-                ))}
-              </select>
+            <select
+              value={newTask.assignedTo}
+              onChange={(e) => setNewTask({...newTask, assignedTo: e.target.value})}
+              required
+            >
+              <option value="">Assign To</option>
+              {Array.isArray(projectMembers) && projectMembers.map(member => (
+                <option key={member._id} value={member._id}>
+                  {member.email}
+                </option>
+              ))}
+            </select>
             <input
               type="datetime-local"
               value={newTask.deadline}
@@ -176,9 +321,12 @@ useEffect(() => {
           </form>
         </div>
 
+        {/* Tasks List */}
         <div className="tasks-list">
           <h3>Tasks</h3>
-          {tasks.length === 0 ? (
+          {isLoading.tasks ? (
+            <div className="loading">Loading tasks...</div>
+          ) : tasks.length === 0 ? (
             <p>No tasks found</p>
           ) : (
             <div className="tasks-grid">

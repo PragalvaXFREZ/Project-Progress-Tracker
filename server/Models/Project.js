@@ -21,5 +21,25 @@ const projectSchema = new mongoose.Schema({
   }
 });
 
-// Export the schema if it hasn't been registered yet
+// Add static method for safe deletion without transactions
+projectSchema.statics.deleteProjectWithTasks = async function(projectId) {
+  try {
+    // First delete all associated tasks
+    const Task = mongoose.model('Task');
+    await Task.deleteMany({ projectId });
+
+    // Then delete the project
+    const deletedProject = await this.findByIdAndDelete(projectId);
+    
+    if (!deletedProject) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteProjectWithTasks:', error);
+    throw error;
+  }
+};
+
 module.exports = mongoose.models.Project || mongoose.model('Project', projectSchema);
