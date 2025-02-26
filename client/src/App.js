@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginSignup from './Pages/LoginSignup/LoginSignup';
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import UserDashboard from './Pages/User/UserDashboard';
+import TaskManagement from './Pages/Admin/Components/TaskManagement/TaskMangament';
 
 function App() {
   return (
@@ -11,7 +12,8 @@ function App() {
         <Route path="/" element={<LoginSignup />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/user" element={<UserDashboard />} />
-      </Routes>
+        <Route path="/admin/project/:projectId/tasks" element={<TaskManagement />} />
+      </Routes> 
     </Router>
   );
 }

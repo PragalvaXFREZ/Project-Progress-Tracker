@@ -1,9 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('./Models/User');
+require('./Models/Project');
+require('./Models/Task');
+
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/project');
+const taskRoutes = require('./routes/taskRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,7 +38,8 @@ mongoose.connect('mongodb://localhost:27017/project', {
 
 // Routes
 app.use('/api', authRoutes);
-app.use('/api/projects', projectRoutes);
+app.use('/api/projects', require('./routes/project'));
+app.use('/api', taskRoutes);
 
 // Start the server
 app.listen(PORT, () => {

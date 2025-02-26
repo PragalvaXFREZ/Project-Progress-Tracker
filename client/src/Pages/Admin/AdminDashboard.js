@@ -26,24 +26,24 @@ const AdminDashboard = () => {
     try {
       const userId = localStorage.getItem('userId');
       const isAdmin = localStorage.getItem('isAdmin') === 'true';
-      
+
       if (!isAdmin) {
         alert('Unauthorized access');
         navigate('/');
         return;
       }
-      
+
       const response = await fetch(`http://localhost:5000/api/projects/user/${userId}`);
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch projects');
       }
-      
+
       const validProjects = Array.isArray(data)
         ? data.filter(project => project && project._id && project.name)
         : [];
-      
+
       setProjects(validProjects);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -54,13 +54,13 @@ const AdminDashboard = () => {
   useEffect(() => {
     const userId = localStorage.getItem('userId');
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    
+
     if (!userId || !isAdmin) {
       alert('Please login as admin');
       navigate('/');
       return;
     }
-    
+
     fetchProjects();
   }, [navigate, fetchProjects]);
 
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
         alert('User not authenticated');
         return;
       }
-  
+
       const response = await fetch('http://localhost:5000/api/projects/create', {
         method: 'POST',
         headers: {
@@ -84,13 +84,13 @@ const AdminDashboard = () => {
           createdBy: userId
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.error || data.message || 'Failed to create project');
       }
-  
+
       const createdProject = data.project || data;
       setProjects([...projects, createdProject]);
       setNewProject({ name: '', description: '' });
@@ -113,20 +113,20 @@ const AdminDashboard = () => {
           email: newMember.email
         }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to add member');
       }
-  
+
       const data = await response.json();
-      
-      setProjects(prevProjects => 
-        prevProjects.map(project => 
+
+      setProjects(prevProjects =>
+        prevProjects.map(project =>
           project._id === newMember.projectId ? data.project : project
         )
       );
-      
+
       setNewMember({ projectId: '', email: '' });
       alert('Member added successfully');
     } catch (error) {
@@ -140,7 +140,7 @@ const AdminDashboard = () => {
       <NavBar userEmail={userEmail} />
       <div className="admin-dashboard">
         <h2>Admin Dashboard</h2>
-        
+
         <div className="create-project">
           <h3>Create New Project</h3>
           <form onSubmit={handleCreateProject}>
@@ -148,13 +148,13 @@ const AdminDashboard = () => {
               type="text"
               placeholder="Project Name"
               value={newProject.name}
-              onChange={(e) => setNewProject({...newProject, name: e.target.value})}
+              onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
               required
             />
             <textarea
               placeholder="Project Description"
               value={newProject.description}
-              onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+              onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
             />
             <button type="submit">Create Project</button>
           </form>
@@ -165,11 +165,11 @@ const AdminDashboard = () => {
           <form onSubmit={handleAddMember}>
             <select
               value={newMember.projectId}
-              onChange={(e) => setNewMember({...newMember, projectId: e.target.value})}
+              onChange={(e) => setNewMember({ ...newMember, projectId: e.target.value })}
               required
             >
               <option value="">Select Project</option>
-              {Array.isArray(projects) && projects.map(project => 
+              {Array.isArray(projects) && projects.map(project =>
                 project && project._id ? (
                   <option key={project._id} value={project._id}>
                     {project.name || 'Unnamed Project'}
@@ -181,7 +181,7 @@ const AdminDashboard = () => {
               type="email"
               placeholder="Member Email"
               value={newMember.email}
-              onChange={(e) => setNewMember({...newMember, email: e.target.value})}
+              onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
               required
             />
             <button type="submit">Add Member</button>
@@ -193,9 +193,14 @@ const AdminDashboard = () => {
           {!Array.isArray(projects) || projects.length === 0 ? (
             <p>No projects found</p>
           ) : (
-            projects.map(project => 
+            projects.map(project =>
               project && project._id ? (
-                <div key={project._id} className="project-card">
+                <div
+                  key={project._id}
+                  className="project-card"
+                  onClick={() => navigate(`/admin/project/${project._id}/tasks`)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <h4>{project.name || 'Unnamed Project'}</h4>
                   <p>{project.description || 'No description'}</p>
                   <p>Members: {project.members?.length || 0}</p>

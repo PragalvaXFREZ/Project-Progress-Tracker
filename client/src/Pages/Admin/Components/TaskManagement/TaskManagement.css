@@ -1,0 +1,91 @@
+.task-management {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .create-task {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .create-task form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .create-task input,
+  .create-task textarea,
+  .create-task select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .create-task button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .task-card {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .task-card h4 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .task-card p {
+    margin: 5px 0;
+    color: #666;
+  }
+
+  .task-management-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .back-button {
+    background-color: #6c757d;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+  }
+  
+  .back-button:hover {
+    background-color: #5a6268;
+  }
+  
+  .project-details {
+    margin-top: 1rem;
+  }
+  
+  .project-details h2 {
+    margin-bottom: 0.5rem;
+  }
+  
+  .project-details p {
+    color: #666;
+    margin-bottom: 0.5rem;
+  }

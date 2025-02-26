@@ -11,6 +11,23 @@
   color: #666;
 }
 
+/* Combined project-card styles */
+.project-card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background-color: #f8f9fa;
+}
+
+/* Rest of your styles */
 .error-message {
   background-color: #fee;
   color: #c00;
@@ -28,6 +45,32 @@
   margin-bottom: 2rem;
 }
 
+/* Projects grid layout */
+.projects-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.project-card h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.project-card p {
+  margin: 0.5rem 0;
+  color: #666;
+}
+
+.project-stats {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+/* Form styles */
 form {
   display: flex;
   flex-direction: column;
@@ -73,35 +116,6 @@ button:hover:not(:disabled) {
 button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
-}
-
-.projects-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.project-card {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.project-card h4 {
-  margin: 0 0 1rem 0;
-  color: #333;
-}
-
-.project-card p {
-  margin: 0.5rem 0;
-  color: #666;
-}
-
-.project-stats {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
 }
 
 h2, h3 {

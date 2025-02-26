@@ -6,6 +6,5 @@ const userSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
 });
 
-const User = mongoose.model('user', userSchema); // Changed 'User' to 'user'
-
-module.exports = User;
+// Use 'User' (uppercase) consistently and prevent recompilation
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

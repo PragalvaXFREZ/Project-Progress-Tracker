@@ -1,34 +1,25 @@
 const mongoose = require('mongoose');
 
-const ProjectSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    description: {
-        type: String,
-        default: ''
-    },
-    createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'user',
-        required: true
-    },
-    members: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'user'
-    }],
-    pendingInvites: [{
-        email: String,
-        invitedAt: {
-            type: Date,
-            default: Date.now
-        }
-    }],
-    date: {
-        type: Date,
-        default: Date.now
-    }
+const projectSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  description: String,
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  members: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-module.exports = mongoose.model('project', ProjectSchema);
+// Export the schema if it hasn't been registered yet
+module.exports = mongoose.models.Project || mongoose.model('Project', projectSchema);

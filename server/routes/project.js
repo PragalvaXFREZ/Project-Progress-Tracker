@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Project = require('../Models/Project');
-const User = require('../models/User');
+const User = require('../Models/User');
 
 // Create project
 router.post('/create', async (req, res) => {
@@ -124,6 +124,26 @@ router.post('/:projectId/members', async (req, res) => {
   } catch (error) {
     console.error('Error adding member:', error);
     res.status(500).json({ error: 'Error adding member to project' });
+  }
+});
+
+// Get single project by ID
+router.get('/:projectId', async (req, res) => {
+  try {
+    console.log('Fetching project with ID:', req.params.projectId); // Add this log
+    const project = await Project.findById(req.params.projectId)
+      .populate('members', 'email')
+      .populate('createdBy', 'email');
+    
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    console.log('Found project:', project); // Add this log
+    res.json(project);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Error fetching project details' });
   }
 });
 
