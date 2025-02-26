@@ -48,4 +48,18 @@ router.patch('/tasks/:taskId/status', async (req, res) => {
   }
 });
 
+router.get('/projects/:projectId/tasks/user/:userId', async (req, res) => {
+  try {
+    const { projectId, userId } = req.params;
+    const tasks = await Task.find({ 
+      projectId,
+      assignedTo: userId
+    }).populate('assignedTo', 'email');
+    res.json(tasks);
+  } catch (error) {
+    console.error('Error fetching user tasks:', error);
+    res.status(500).json({ error: 'Error fetching tasks' });
+  }
+});
+
 module.exports = router;

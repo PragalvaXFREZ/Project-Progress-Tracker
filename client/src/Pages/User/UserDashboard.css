@@ -1,54 +1,71 @@
 .user-dashboard {
-    padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .project-selector {
-    margin-bottom: 2rem;
-  }
-  
-  select {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-top: 0.5rem;
-  }
-  
-  .project-details {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .project-details h3 {
-    margin-top: 0;
-    color: #333;
-  }
-  
-  .description {
-    color: #666;
-    margin: 1rem 0;
-  }
-  
-  .project-info {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-  }
-  
-  .project-info p {
-    margin: 0.5rem 0;
-    color: #555;
-  }
-  
-  .project-info strong {
-    color: #333;
-  }
-  
-  h2, h3 {
-    color: #333;
-  }
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.project-selector {
+  margin-bottom: 2rem;
+}
+
+.project-selector select {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.project-details {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.project-info {
+  margin-bottom: 2rem;
+}
+
+.project-tasks {
+  margin-top: 2rem;
+}
+
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.task-card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.task-card[data-status="completed"] {
+  border-left: 4px solid #28a745;
+}
+
+.task-card[data-status="in-progress"] {
+  border-left: 4px solid #ffc107;
+}
+
+.task-card[data-status="pending"] {
+  border-left: 4px solid #dc3545;
+}
+
+.task-status {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.no-projects {
+  text-align: center;
+  color: #666;
+  margin-top: 2rem;
+}

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Project = require('../Models/Project');
 const User = require('../Models/User');
+const Task = require('../Models/Task');
 
 // Create project
 router.post('/create', async (req, res) => {
@@ -166,5 +167,7 @@ router.get('/:projectId', async (req, res) => {
     res.status(500).json({ error: 'Error fetching project details' });
   }
 });
+
+
 
 module.exports = router;
