@@ -51,23 +51,37 @@ const TaskManagement = () => {
   }, [projectId]);
 
   const fetchProjectMembers = useCallback(async () => {
-  try {
-    // Update the URL to match the router path
-    const response = await fetch(`http://localhost:5000/api/project/${projectId}/members`);
-    const data = await response.json();
-    if (response.ok) {
-      setProjectMembers(data.project.members); // Update to access members from the response
+    try {
+      console.log('Fetching members for project:', projectId);
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/members`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Project members data:', data);
+      
+      // Set the members directly since the backend sends the members array
+      setProjectMembers(data);
+    } catch (error) {
+      console.error('Error fetching project members:', error);
+      // Initialize empty array if there's an error
+      setProjectMembers([]);
     }
-  } catch (error) {
-    console.error('Error fetching project members:', error);
-  }
-}, [projectId]);
+  }, [projectId]);
 
 useEffect(() => {
   fetchProjectDetails();
   fetchTasks();
   fetchProjectMembers();
 }, [fetchProjectDetails, fetchTasks, fetchProjectMembers]);
+
+// Separate useEffect for logging if needed
+useEffect(() => {
+  console.log('Current project details:', projectDetails);
+  console.log('Current project members:', projectMembers);
+}, [projectDetails, projectMembers]);
 
   const handleBack = () => {
     navigate('/admin');

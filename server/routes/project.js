@@ -127,6 +127,26 @@ router.post('/:projectId/members', async (req, res) => {
   }
 });
 
+// Get project members
+router.get('/:projectId/members', async (req, res) => {
+  try {
+    console.log('Fetching members for project:', req.params.projectId);
+    const project = await Project.findById(req.params.projectId)
+      .populate('members', 'email _id');
+    
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    console.log('Found members:', project.members);
+    // Send only the members array
+    res.json(project.members);
+  } catch (error) {
+    console.error('Error fetching members:', error);
+    res.status(500).json({ error: 'Error fetching project members' });
+  }
+});
+
 // Get single project by ID
 router.get('/:projectId', async (req, res) => {
   try {
