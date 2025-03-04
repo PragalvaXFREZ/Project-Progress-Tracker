@@ -9,8 +9,11 @@ const UserDashboard = () => {
   const [userEmail, setUserEmail] = useState('');
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [setError] = useState(null);
   const navigate = useNavigate();
 
+
+  //fetching the projects
   const fetchProjects = async () => {
     try {
       const userId = localStorage.getItem('userId');
@@ -28,6 +31,7 @@ const UserDashboard = () => {
     }
   };
 
+  //fetching the tasks
   const fetchTasks = async (projectId) => {
     try {
       setIsLoading(true);
@@ -91,17 +95,23 @@ const UserDashboard = () => {
         },
         body: JSON.stringify({ status: newStatus }),
       });
-  
-      if (response.ok) {
-        setTasks(tasks.map(task => 
-          task._id === taskId ? { ...task, status: newStatus } : task
-        ));
-      } else {
-        throw new Error('Failed to update task status');
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.error === 'Project is completed') {
+          alert('This project has been marked as complete. Task status cannot be changed.');
+          return;
+        }
+        throw new Error(data.error || 'Failed to update task status');
       }
+
+      setTasks(tasks.map(task => 
+        task._id === taskId ? { ...task, status: newStatus } : task
+      ));
     } catch (error) {
       console.error('Error updating task status:', error);
-      alert('Failed to update task status');
+      setError(error.message);
     }
   };
 
@@ -145,7 +155,11 @@ const UserDashboard = () => {
               ) : (
                 <div className="tasks-grid">
                   {tasks.map(task => (
-                    <div key={task._id} className="task-card" data-status={task.status}>
+                    <div 
+                      key={task._id} 
+                      className={`task-card ${selectedProject?.status === 'completed' ? 'locked' : ''}`} 
+                      data-status={task.status}
+                    >
                       <h4>{task.title}</h4>
                       <p>{task.description}</p>
                       <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleDateString()}</p>
@@ -154,12 +168,18 @@ const UserDashboard = () => {
                         <select
                           value={task.status}
                           onChange={(e) => handleStatusUpdate(task._id, e.target.value)}
+                          disabled={selectedProject?.status === 'completed'}
                         >
                           <option value="pending">Pending</option>
                           <option value="in-progress">In Progress</option>
                           <option value="completed">Completed</option>
                         </select>
                       </div>
+                      {selectedProject?.status === 'completed' && (
+                        <div className="locked-badge">
+                          <span>🔒 Project Completed</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

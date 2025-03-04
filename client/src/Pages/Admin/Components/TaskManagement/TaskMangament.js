@@ -7,7 +7,6 @@ const TaskManagement = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
   
-  // State declarations
   const [tasks, setTasks] = useState([]);
   const [projectMembers, setProjectMembers] = useState([]);
   const [projectDetails, setProjectDetails] = useState(null);
@@ -27,6 +26,26 @@ const TaskManagement = () => {
   });
   const [projectStatus, setProjectStatus] = useState('');
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+
+  // Add this validation function after your state declarations
+  const validateTaskDeadline = (taskDeadline) => {
+    const projectDeadline = new Date(projectDetails?.deadline);
+    const selectedDeadline = new Date(taskDeadline);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    if (selectedDeadline < today) {
+      alert('Task deadline cannot be in the past');
+      return false;
+    }
+  
+    if (selectedDeadline > projectDeadline) {
+      alert('Task deadline cannot exceed project deadline');
+      return false;
+    }
+  
+    return true;
+  };
 
   // Fetch functions
   const fetchProjectDetails = useCallback(async () => {
@@ -87,7 +106,7 @@ const TaskManagement = () => {
     }
   }, [projectId]);
 
-  // Effect hooks
+ 
   useEffect(() => {
     let mounted = true;
 
@@ -114,7 +133,7 @@ const TaskManagement = () => {
     };
   }, [fetchProjectDetails, fetchTasks, fetchProjectMembers]);
 
-  // Validation function
+  
   const validateTask = (task) => {
     if (!task.title.trim()) throw new Error('Title is required');
     if (!task.description.trim()) throw new Error('Description is required');
@@ -125,7 +144,7 @@ const TaskManagement = () => {
     if (deadlineDate < new Date()) throw new Error('Deadline cannot be in the past');
   };
 
-  // Handler functions
+  
   const handleBack = () => {
     navigate('/admin');
   };
@@ -133,6 +152,9 @@ const TaskManagement = () => {
   const handleCreateTask = async (e) => {
     e.preventDefault();
     try {
+      if (!validateTaskDeadline(newTask.deadline)) {
+        return;
+      }
       validateTask(newTask);
       
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks`, {
@@ -178,16 +200,14 @@ const TaskManagement = () => {
         }
       });
 
-      // First check if the response is not ok
       if (!response.ok) {
-        // Only try to parse error response as JSON
+    
         const errorData = await response.json().catch(() => ({
           error: 'Failed to delete project'
         }));
         throw new Error(errorData.error || 'Failed to delete project');
       }
       
-      // If response is ok, don't try to parse it
       alert('Project deleted successfully');
       navigate('/admin');
     } catch (error) {
@@ -234,7 +254,6 @@ const TaskManagement = () => {
     setShowCompleteModal(false);
   };
 
-  // Error boundary render
   if (error) {
     return (
       <div className="error-container">
@@ -250,7 +269,6 @@ const TaskManagement = () => {
     );
   }
 
-  // Main render
   return (
     <div>
       <NavBar userEmail={localStorage.getItem('userEmail')} />
@@ -304,7 +322,6 @@ const TaskManagement = () => {
           )}
         </div>
 
-        {/* Delete Modal */}
         {showDeleteModal && (
           <div className="delete-modal">
             <div className="delete-modal-content">
@@ -338,7 +355,7 @@ const TaskManagement = () => {
           </div>
         )}
 
-        {/* Create Task Form */}
+        
         <div className="create-task">
           <h3>Create New Task</h3>
           <form onSubmit={handleCreateTask}>
@@ -361,23 +378,34 @@ const TaskManagement = () => {
               required
             >
               <option value="">Assign To</option>
-              {Array.isArray(projectMembers) && projectMembers.map(member => (
-                <option key={member._id} value={member._id}>
-                  {member.email}
-                </option>
-              ))}
+              {Array.isArray(projectMembers) && projectMembers
+                .filter(member => member._id !== projectDetails?.createdBy?._id)
+                .map(member => (
+                  <option key={member._id} value={member._id}>
+                    {member.email}
+                  </option>
+                ))}
             </select>
-            <input
-              type="datetime-local"
-              value={newTask.deadline}
-              onChange={(e) => setNewTask({...newTask, deadline: e.target.value})}
-              required
-            />
+            <div className="date-input-container">
+              <label>Task Deadline:</label>
+              <input
+                type="datetime-local"
+                value={newTask.deadline}
+                min={new Date().toISOString().slice(0, 16)}
+                max={projectDetails?.deadline ? new Date(projectDetails.deadline).toISOString().slice(0, 16) : undefined}
+                onChange={(e) => {
+                  const selectedDate = e.target.value;
+                  if (validateTaskDeadline(selectedDate)) {
+                    setNewTask({...newTask, deadline: selectedDate});
+                  }
+                }}
+                required
+              />
+            </div>
             <button type="submit">Create Task</button>
           </form>
         </div>
 
-        {/* Tasks List */}
         <div className="tasks-list">
           <h3>Tasks</h3>
           {isLoading.tasks ? (
@@ -387,12 +415,17 @@ const TaskManagement = () => {
           ) : (
             <div className="tasks-grid">
               {tasks.map(task => (
-                <div key={task._id} className="task-card">
+                <div key={task._id} className={`task-card ${task.isLocked ? 'locked' : ''}`}>
                   <h4>{task.title}</h4>
                   <p>{task.description}</p>
                   <p>Assigned to: {task.assignedTo.email}</p>
                   <p>Deadline: {new Date(task.deadline).toLocaleString()}</p>
                   <p>Status: {task.status}</p>
+                  {task.isLocked && (
+                    <div className="locked-badge">
+                      <span> Project Completed</span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

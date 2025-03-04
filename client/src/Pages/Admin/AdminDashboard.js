@@ -9,12 +9,21 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [newProject, setNewProject] = useState({
     name: '',
-    description: ''
+    description: '',
+    deadline: ''
   });
   const [newMember, setNewMember] = useState({
     projectId: '',
     email: ''
   });
+
+  // Add this after your state declarations
+  const validateDeadline = (selectedDate) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selected = new Date(selectedDate);
+    return selected >= today;
+  };
 
   // Add useEffect to set userEmail
   useEffect(() => {
@@ -40,8 +49,10 @@ const AdminDashboard = () => {
         throw new Error(data.error || 'Failed to fetch projects');
       }
 
+      console.log('Fetched projects:', data); // Add this log
+
       const validProjects = Array.isArray(data)
-        ? data.filter(project => project && project._id && project.name)
+        ? data.filter(project => project && project._id)
         : [];
 
       setProjects(validProjects);
@@ -73,6 +84,11 @@ const AdminDashboard = () => {
         return;
       }
 
+      if (!validateDeadline(newProject.deadline)) {
+        alert('Please select a valid future date');
+        return;
+      }
+
       const response = await fetch('http://localhost:5000/api/projects/create', {
         method: 'POST',
         headers: {
@@ -81,6 +97,7 @@ const AdminDashboard = () => {
         body: JSON.stringify({
           name: newProject.name,
           description: newProject.description || '',
+          deadline: new Date(newProject.deadline).toISOString(),
           createdBy: userId
         }),
       });
@@ -93,7 +110,7 @@ const AdminDashboard = () => {
 
       const createdProject = data.project || data;
       setProjects([...projects, createdProject]);
-      setNewProject({ name: '', description: '' });
+      setNewProject({ name: '', description: '', deadline: '' });
       alert('Project created successfully');
     } catch (error) {
       console.error('Error creating project:', error);
@@ -156,6 +173,23 @@ const AdminDashboard = () => {
               value={newProject.description}
               onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
             />
+            <div className="date-input-container">
+              <label>Project Deadline:</label>
+              <input
+                type="date"
+                value={newProject.deadline}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const selectedDate = e.target.value;
+                  if (!validateDeadline(selectedDate)) {
+                    alert('Please select a future date');
+                    return;
+                  }
+                  setNewProject({ ...newProject, deadline: selectedDate });
+                }}
+                required
+              />
+            </div>
             <button type="submit">Create Project</button>
           </form>
         </div>
@@ -187,9 +221,9 @@ const AdminDashboard = () => {
             <button type="submit">Add Member</button>
           </form>
         </div>
-
+        <h3>Your Projects</h3>
         <div className="projects-list">
-          <h3>Your Projects</h3>
+          
           {!Array.isArray(projects) || projects.length === 0 ? (
             <p>No projects found</p>
           ) : (
@@ -198,19 +232,29 @@ const AdminDashboard = () => {
                 <div
                   key={project._id}
                   className="project-card"
+                  data-status={project.status}
                   onClick={() => navigate(`/admin/project/${project._id}/tasks`)}
                   style={{ cursor: 'pointer' }}
                 >
                   <h4>{project.name || 'Unnamed Project'}</h4>
                   <p>{project.description || 'No description'}</p>
                   <p>Members: {project.members?.length || 0}</p>
+                  <p>Status: {project.status}</p>
+                  <p>Deadline: {project.deadline ? 
+                    new Date(project.deadline).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    }) : 'No deadline set'}
+                  </p>
                 </div>
               ) : null
             )
           )}
         </div>
+        </div>
       </div>
-    </div>
+    
   );
 };
 

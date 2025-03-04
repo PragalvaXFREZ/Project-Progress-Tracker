@@ -7,40 +7,37 @@ const Task = require('../Models/Task');
 // Create project
 router.post('/create', async (req, res) => {
   try {
-      const { name, description, createdBy } = req.body;
-      
-      console.log('Received project data:', { name, description, createdBy });
-      
-      if (!name || !createdBy) {
-          return res.status(400).json({ error: 'Project name and creator ID are required' });
-      }
+    const { name, description, createdBy, deadline } = req.body;
+    
+    console.log('Received project data:', { name, description, createdBy, deadline });
+    
+    if (!name || !createdBy || !deadline) {
+      return res.status(400).json({ error: 'Name, creator ID, and deadline are required' });
+    }
 
-      const project = new Project({
-          name,
-          description: description || '',
-          createdBy,
-          members: [createdBy]
-      });
+    const project = new Project({
+      name,
+      description: description || '',
+      createdBy,
+      members: [createdBy],
+      deadline: new Date(deadline)
+    });
 
-      console.log('Created project object:', project);
+    console.log('Created project object:', project);
 
-      const savedProject = await project.save();
-      console.log('Saved project:', savedProject);
+    const savedProject = await project.save();
+    
+    const populatedProject = await Project.findById(savedProject._id)
+      .populate('members', 'email')
+      .populate('createdBy', 'email');
 
-      const populatedProject = await Project.findById(savedProject._id)
-          .populate('members', 'email')
-          .populate('createdBy', 'email');
-
-      res.status(201).json({ 
-          message: 'Project created successfully',
-          project: populatedProject
-      });
+    res.status(201).json({ 
+      message: 'Project created successfully',
+      project: populatedProject
+    });
   } catch (error) {
-      console.error('Detailed error:', error);
-      res.status(500).json({ 
-          error: 'Error creating project',
-          details: error.message 
-      });
+    console.error('Error creating project:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

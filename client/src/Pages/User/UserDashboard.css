@@ -57,6 +57,28 @@
   border-left: 4px solid #dc3545;
 }
 
+.task-card.locked {
+  position: relative;
+  opacity: 0.8;
+  background-color: #f8f9fa;
+}
+
+.task-card.locked select {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.locked-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #dc3545;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
 .task-status {
   margin-top: 1rem;
   display: flex;
@@ -68,4 +90,13 @@
   text-align: center;
   color: #666;
   margin-top: 2rem;
+}
+
+.error-message {
+  color: #dc3545;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
 }

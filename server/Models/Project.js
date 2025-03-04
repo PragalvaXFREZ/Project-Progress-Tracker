@@ -20,6 +20,10 @@ const projectSchema = new mongoose.Schema({
     enum: ['pending', 'planning', 'in-progress', 'completed'],
     default: 'pending'
   },
+  deadline: {
+    type: Date,
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

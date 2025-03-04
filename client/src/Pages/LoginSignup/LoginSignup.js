@@ -89,6 +89,11 @@ const LoginSignup = () => {
   };
 
   return (
+    <div>
+      <div className='welcome-text'>
+        <h1>Welcome to Project Progress Tracker</h1>
+      </div>
+      <div className="welcome-underline"></div>
     <div className="auth-container">
       <div className="auth-box">
         <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
@@ -151,6 +156,7 @@ const LoginSignup = () => {
           </span>
         </p>
       </div>
+    </div>
     </div>
   );
 };

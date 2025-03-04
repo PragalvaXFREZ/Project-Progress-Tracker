@@ -39,7 +39,7 @@ mongoose.connect('mongodb://localhost:27017/project', {
 // Routes
 app.use('/api', authRoutes);
 app.use('/api/projects', require('./routes/project'));
-app.use('/api', require('./routes/taskRoutes')); // Make sure this line is present
+app.use('/api', require('./routes/taskRoutes')); 
 
 // Start the server
 app.listen(PORT, () => {
