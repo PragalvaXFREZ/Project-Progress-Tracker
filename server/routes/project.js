@@ -145,6 +145,50 @@ router.get('/:projectId/members', async (req, res) => {
   }
 });
 
+// IMPORTANT: Place this route BEFORE any routes with :projectId
+router.get('/archived', async (req, res) => {
+  try {
+    const archivedProjects = await Project.find({ 
+      status: 'completed'  // This is already correct
+    })
+    .populate('members', 'email')
+    .populate('createdBy', 'email');
+
+    console.log('Fetching archived projects:', archivedProjects);
+    res.json(archivedProjects);
+  } catch (error) {
+    console.error('Error fetching archived projects:', error);
+    res.status(500).json({ error: 'Error fetching archived projects' });
+  }
+});
+
+// Get archived projects for a specific user
+router.get('/archived/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const archivedProjects = await Project.find({
+      $and: [
+        { status: 'completed' }, // Changed from 'archived' to 'completed'
+        {
+          $or: [
+            { createdBy: userId },
+            { members: userId }
+          ]
+        }
+      ]
+    })
+    .populate('members', 'email')
+    .populate('createdBy', 'email');
+
+    console.log('Fetched archived projects for user:', userId, archivedProjects);
+    res.json(archivedProjects);
+  } catch (error) {
+    console.error('Error fetching archived projects:', error);
+    res.status(500).json({ message: 'Error fetching archived projects' });
+  }
+});
+
 // Get single project by ID
 router.get('/:projectId', async (req, res) => {
   try {
@@ -208,6 +252,30 @@ router.patch('/:projectId/status', async (req, res) => {
   } catch (error) {
     console.error('Error updating project status:', error);
     res.status(500).json({ error: 'Error updating project status' });
+  }
+});
+
+// Archive a project (update status to completed)
+router.patch('/:projectId/archive', async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.projectId);
+    
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    project.status = 'completed';
+    project.completionDate = new Date();
+    await project.save();
+
+    const updatedProject = await Project.findById(req.params.projectId)
+      .populate('members', 'email')
+      .populate('createdBy', 'email');
+
+    res.json(updatedProject);
+  } catch (error) {
+    console.error('Error archiving project:', error);
+    res.status(500).json({ error: 'Error archiving project' });
   }
 });
 

@@ -17,7 +17,14 @@ const UserDashboard = () => {
   const fetchProjects = async () => {
     try {
       const userId = localStorage.getItem('userId');
-      const response = await fetch(`http://localhost:5000/api/projects/user/${userId}`);
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`http://localhost:5000/api/projects/user/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       const data = await response.json();
 
       if (!response.ok) {
@@ -36,9 +43,15 @@ const UserDashboard = () => {
     try {
       setIsLoading(true);
       const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
       console.log('Fetching tasks for project:', projectId, 'and user:', userId);
       
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks/user/${userId}`);
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks/user/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       const data = await response.json();
       
       console.log('Tasks response:', data);
@@ -88,9 +101,11 @@ const UserDashboard = () => {
 
   const handleStatusUpdate = async (taskId, newStatus) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/tasks/${taskId}/status`, {
         method: 'PATCH',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ status: newStatus }),

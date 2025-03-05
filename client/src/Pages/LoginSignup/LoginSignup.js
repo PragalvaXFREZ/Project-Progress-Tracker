@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './LoginSignup.css';
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+
 const LoginSignup = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const LoginSignup = () => {
     confirmPassword: '',
     isAdmin: false
   });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -17,7 +19,7 @@ const LoginSignup = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('http://localhost:5000/api/login', {  // Changed from /api/signup
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,35 +30,41 @@ const LoginSignup = () => {
         }),
       });
       const data = await response.json();
+      console.log('Login response:', data); // Debug log
       
       if (response.ok) {
-        // Store user data in localStorage
+        // Store all required data in localStorage
+        localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
+        localStorage.setItem('userEmail', data.email);
         localStorage.setItem('isAdmin', data.isAdmin);
-        console.log('Stored userId:', data.userId); // Debug log
-        
-        if (data.isAdmin) {
-          navigate('/admin');
-        } else {
-          navigate('/user');
-        }
+
+        // Debug log to verify storage
+        console.log('Stored auth data:', {
+          token: localStorage.getItem('token'),
+          userId: localStorage.getItem('userId'),
+          email: localStorage.getItem('userEmail'),
+          isAdmin: localStorage.getItem('isAdmin')
+        });
+
+        navigate(data.isAdmin ? '/admin' : '/user');
       } else {
-        alert(data.error || 'Login failed');
+        setError(data.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Error connecting to server');
+      setError('Error connecting to server');
     }
   };
 
   const handleSignup = async () => {
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/signup', {
+      const response = await fetch('http://localhost:5000/api/signup', {  // This is correct
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,12 +78,13 @@ const LoginSignup = () => {
       const data = await response.json();
       if (response.ok) {
         setIsLogin(true); // Switch to login view after successful signup
+        setError('');
       } else {
-        alert(data.error || 'Signup failed');
+        setError(data.message || 'Signup failed');
       }
     } catch (error) {
       console.error('Signup error:', error);
-      alert('Error connecting to server');
+      setError('Error connecting to server');
     }
   };
 
@@ -149,6 +158,7 @@ const LoginSignup = () => {
             {isLogin ? 'Login' : 'Sign Up'}
           </button>
         </form>
+        {error && <p className="error-message">{error}</p>}
         <p className="toggle-form">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <span onClick={() => setIsLogin(!isLogin)}>

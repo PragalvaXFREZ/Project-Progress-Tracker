@@ -16,6 +16,7 @@ const AdminDashboard = () => {
     projectId: '',
     email: ''
   });
+  const [role, setRole] = useState('admin');
 
   // Add this after your state declarations
   const validateDeadline = (selectedDate) => {
@@ -28,28 +29,31 @@ const AdminDashboard = () => {
   // Add useEffect to set userEmail
   useEffect(() => {
     const email = localStorage.getItem('userEmail');
+    const isAdmin = localStorage.getItem('isAdmin');
     setUserEmail(email || 'Admin');
+    setRole(isAdmin === 'true' ? 'admin' : 'user');
   }, []);
 
   const fetchProjects = useCallback(async () => {
     try {
       const userId = localStorage.getItem('userId');
-      const isAdmin = localStorage.getItem('isAdmin') === 'true';
+      const token = localStorage.getItem('token');
 
-      if (!isAdmin) {
-        alert('Unauthorized access');
-        navigate('/');
-        return;
-      }
+      // Updated URL to match backend route
+      const response = await fetch(`http://localhost:5000/api/projects/user/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      const response = await fetch(`http://localhost:5000/api/projects/user/${userId}`);
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch projects');
       }
 
-      console.log('Fetched projects:', data); // Add this log
+      console.log('Fetched projects:', data);
 
       const validProjects = Array.isArray(data)
         ? data.filter(project => project && project._id)
@@ -60,7 +64,7 @@ const AdminDashboard = () => {
       console.error('Error fetching projects:', error);
       setProjects([]);
     }
-  }, [navigate]);
+  }, []); // Removed navigate from dependencies
 
   useEffect(() => {
     const userId = localStorage.getItem('userId');
@@ -79,6 +83,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     try {
       const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
       if (!userId) {
         alert('User not authenticated');
         return;
@@ -89,9 +94,11 @@ const AdminDashboard = () => {
         return;
       }
 
+      // Updated URL to match backend route
       const response = await fetch('http://localhost:5000/api/projects/create', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -109,7 +116,7 @@ const AdminDashboard = () => {
       }
 
       const createdProject = data.project || data;
-      setProjects([...projects, createdProject]);
+      setProjects(prevProjects => [...prevProjects, createdProject]);
       setNewProject({ name: '', description: '', deadline: '' });
       alert('Project created successfully');
     } catch (error) {
@@ -121,9 +128,13 @@ const AdminDashboard = () => {
   const handleAddMember = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
+      
+      // Updated URL to match backend route
       const response = await fetch(`http://localhost:5000/api/projects/${newMember.projectId}/members`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -154,7 +165,7 @@ const AdminDashboard = () => {
 
   return (
     <div>
-      <NavBar userEmail={userEmail} />
+      <NavBar userEmail={userEmail} userRole={role}/>
       <div className="admin-dashboard">
         <h2>Admin Dashboard</h2>
 
