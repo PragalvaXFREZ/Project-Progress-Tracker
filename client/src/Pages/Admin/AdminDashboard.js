@@ -39,7 +39,6 @@ const AdminDashboard = () => {
       const userId = localStorage.getItem('userId');
       const token = localStorage.getItem('token');
 
-      // Updated URL to match backend route
       const response = await fetch(`http://localhost:5000/api/projects/user/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -53,18 +52,17 @@ const AdminDashboard = () => {
         throw new Error(data.error || 'Failed to fetch projects');
       }
 
-      console.log('Fetched projects:', data);
-
-      const validProjects = Array.isArray(data)
-        ? data.filter(project => project && project._id)
+      // Filter out completed projects
+      const activeProjects = Array.isArray(data)
+        ? data.filter(project => project && project._id && project.status !== 'completed')
         : [];
 
-      setProjects(validProjects);
+      setProjects(activeProjects);
     } catch (error) {
       console.error('Error fetching projects:', error);
       setProjects([]);
     }
-  }, []); // Removed navigate from dependencies
+  }, []); // Empty dependency array
 
   useEffect(() => {
     const userId = localStorage.getItem('userId');
