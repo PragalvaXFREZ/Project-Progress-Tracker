@@ -1,17 +1,22 @@
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
-  projectId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Project',
-    required: true
-  },
   title: {
     type: String,
     required: true
   },
   description: {
     type: String,
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'in-progress', 'completed', 'accepted'],
+    default: 'pending'
+  },
+  projectId: {  // Changed from project to projectId
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Project',
     required: true
   },
   assignedTo: {
@@ -23,11 +28,6 @@ const taskSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  status: {
-    type: String,
-    enum: ['pending', 'in-progress', 'inreview','completed'],
-    default: 'pending'
-  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -38,4 +38,4 @@ const taskSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.models.Task || mongoose.model('Task', taskSchema);
+module.exports = mongoose.model('Task', taskSchema);

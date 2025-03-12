@@ -73,7 +73,9 @@ const ProjectReport = () => {
                 <h3>{report.name}</h3>
                 <div className="metrics-summary">
                   <div className="metric-item">
-                    <span className="metric-value">{report.metrics.completionRate}%</span>
+                    <span className="metric-value">
+                      {parseFloat(report.metrics.completionRate).toFixed(1)}%
+                    </span>
                     <span className="metric-label">Complete</span>
                   </div>
                   <div className="metric-item">
@@ -159,10 +161,10 @@ const ProjectReport = () => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill"
-                  style={{ width: `${report.taskMetrics.completionRate}%` }}
+                  style={{ width: `${parseFloat(report.taskMetrics.completionRate).toFixed(1)}%` }}
                 />
                 <span className="completion-percentage">
-                  {report.taskMetrics.completionRate}%
+                  {parseFloat(report.taskMetrics.completionRate).toFixed(1)}%
                 </span>
               </div>
             </div>

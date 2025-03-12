@@ -255,14 +255,21 @@
 
 .reports-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  padding: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Slightly wider cards */
+  gap: 1.5rem;
+  padding: 1.5rem;
 }
 
 .report-card.clickable {
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-height: 200px; /* Add minimum height */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .report-card.clickable:hover {
@@ -270,11 +277,41 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
+.report-card.clickable h3 {
+  color: #1e293b;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  /* Ensure title doesn't overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .metrics-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin: 1rem 0;
+  gap: 0.75rem; /* Reduced gap */
+  margin: 0.75rem 0;
+}
+
+.metric-item {
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 1.25rem; /* Slightly reduced size */
+  font-weight: 600;
+  color: #4361ee;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
 .report-meta {
@@ -282,4 +319,16 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 1rem;
+  flex-wrap: wrap; /* Allow wrapping for overdue warning */
+  gap: 0.5rem; /* Space between wrapped items */
+}
+
+.overdue-warning {
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #fee2e2;
+  border-radius: 4px;
+  white-space: nowrap;
 }

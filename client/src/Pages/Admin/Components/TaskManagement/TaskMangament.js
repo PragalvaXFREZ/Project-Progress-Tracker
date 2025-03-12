@@ -27,6 +27,18 @@ const TaskManagement = () => {
   const [projectStatus, setProjectStatus] = useState('');
   const [showCompleteModal, setShowCompleteModal] = useState(false);
 
+  // Add this at the top of your component
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
+
   // Add this validation function after your state declarations
   const validateTaskDeadline = (taskDeadline) => {
     const projectDeadline = new Date(projectDetails?.deadline);
@@ -191,6 +203,7 @@ const TaskManagement = () => {
     navigate('/admin');
   };
 
+  // Update handleCreateTask
   const handleCreateTask = async (e) => {
     e.preventDefault();
     try {
@@ -201,9 +214,7 @@ const TaskManagement = () => {
       
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newTask),
       });
 
@@ -222,11 +233,16 @@ const TaskManagement = () => {
         throw new Error(data.error || 'Failed to create task');
       }
     } catch (error) {
+      if (error.message === 'No authentication token found') {
+        navigate('/');
+        return;
+      }
       console.error('Error creating task:', error);
       alert('Failed to create task: ' + error.message);
     }
   };
 
+  // Update handleDeleteProject
   const handleDeleteProject = async () => {
     try {
       if (deleteConfirmation !== projectDetails?.name) {
@@ -237,9 +253,7 @@ const TaskManagement = () => {
       console.log('Attempting to delete project:', projectId);
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -253,18 +267,21 @@ const TaskManagement = () => {
       alert('Project deleted successfully');
       navigate('/admin');
     } catch (error) {
+      if (error.message === 'No authentication token found') {
+        navigate('/');
+        return;
+      }
       console.error('Error deleting project:', error);
       alert(`Failed to delete project: ${error.message}`);
     }
   };
 
+  // Update handleStatusUpdate
   const handleStatusUpdate = async (newStatus) => {
     try {
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}/status`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ status: newStatus }),
       });
   
@@ -276,6 +293,10 @@ const TaskManagement = () => {
       setProjectDetails(updatedProject);
       setProjectStatus(updatedProject.status);
     } catch (error) {
+      if (error.message === 'No authentication token found') {
+        navigate('/');
+        return;
+      }
       console.error('Error updating project status:', error);
       alert('Failed to update project status');
     }
