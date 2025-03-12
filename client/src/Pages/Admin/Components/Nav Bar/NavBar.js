@@ -1,9 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './NavBar.css';
 
 const NavBar = ({ userEmail, userRole }) => {
   const navigate = useNavigate();
+  const { projectId } = useParams();
 
   const handleLogout = () => {
     localStorage.clear();
@@ -15,6 +16,15 @@ const NavBar = ({ userEmail, userRole }) => {
     navigate(dashboardPath);
   };
 
+  const handleReportClick = () => {
+    if (projectId) {
+      navigate(`/project/${projectId}/report`);
+    } else {
+      // If not in a project context, navigate to reports list
+      navigate('/reports');
+    }
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-left">
@@ -23,7 +33,7 @@ const NavBar = ({ userEmail, userRole }) => {
       <div className="navbar-right">
         <button onClick={handleDashboardClick}>Dashboard</button>
         <button onClick={() => navigate('/projects/archived')}>Archives</button>
-        <button onClick={() => navigate('/reports')}>Project Reports</button>
+        <button onClick={handleReportClick}>Project Reports</button>
         <button onClick={handleLogout} className="logout-btn">Logout</button>
       </div>
     </nav>

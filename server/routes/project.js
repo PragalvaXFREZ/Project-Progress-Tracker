@@ -189,6 +189,105 @@ router.get('/archived/user/:userId', async (req, res) => {
   }
 });
 
+// Add the reports route BEFORE the :projectId routes
+router.get('/reports', async (req, res) => {
+  try {
+    // Change from req.user._id to req.user.userId
+    const userId = req.user.userId;
+    console.log('Current user ID:', userId);
+
+    // First, verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log('User not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log('Found user:', user.email);
+
+    // Find projects with detailed logging
+    const query = {
+      $or: [
+        { createdBy: userId },
+        { members: { $in: [userId] } }
+      ]
+    };
+    console.log('Project query:', JSON.stringify(query));
+
+    const projects = await Project.find(query)
+      .populate('members', 'email')
+      .populate('createdBy', 'email');
+
+    console.log('Projects found:', projects.length);
+    console.log('Project IDs:', projects.map(p => p._id));
+
+    if (projects.length === 0) {
+      console.log('No projects found for user');
+      return res.json([]); // Return empty array instead of error
+    }
+
+    const projectReports = await Promise.all(projects.map(async (project) => {
+      console.log(`Processing project: ${project.name} (${project._id})`);
+      
+      const tasks = await Task.find({ project: project._id })
+        .populate('assignedTo', 'email');
+      
+      console.log(`Found ${tasks.length} tasks for project ${project.name}`);
+
+      const totalTasks = tasks.length;
+      const completedTasks = tasks.filter(task => 
+        task.status === 'completed' || task.status === 'accepted'
+      ).length;
+      const overdueTasks = tasks.filter(task => 
+        new Date(task.deadline) < new Date() && task.status !== 'completed'
+      ).length;
+
+      // Calculate completion rate
+      const completionRate = totalTasks ? 
+        ((completedTasks / totalTasks) * 100).toFixed(2) : 0;
+
+      // Only consider project overdue if it's not completed
+      const isOverdue = project.status !== 'completed' && 
+        project.deadline ? new Date(project.deadline) < new Date() : false;
+
+      return {
+        _id: project._id,
+        name: project.name,
+        description: project.description,
+        status: project.status,
+        createdAt: project.createdAt,
+        deadline: project.deadline,
+        isOverdue: isOverdue,
+        metrics: {
+          total: totalTasks,
+          completed: completedTasks,
+          pending: totalTasks - completedTasks,
+          overdue: tasks.filter(task => 
+            task.status !== 'completed' && 
+            task.status !== 'accepted' &&
+            new Date(task.deadline) < new Date()
+          ).length
+        },
+        taskStatus: {
+          pending: tasks.filter(task => task.status === 'pending').length,
+          inProgress: tasks.filter(task => task.status === 'in-progress').length,
+          completed: tasks.filter(task => task.status === 'completed').length,
+          accepted: tasks.filter(task => task.status === 'accepted').length
+        }
+      };
+    }));
+
+    console.log(`Generated ${projectReports.length} project reports`);
+    res.json(projectReports);
+
+  } catch (error) {
+    console.error('Error in /reports:', error);
+    res.status(500).json({ 
+      error: 'Error fetching reports',
+      details: error.message
+    });
+  }
+});
+
 // Get single project by ID
 router.get('/:projectId', async (req, res) => {
   try {
@@ -275,6 +374,101 @@ router.patch('/:projectId/archive', async (req, res) => {
   } catch (error) {
     console.error('Error archiving project:', error);
     res.status(500).json({ error: 'Error archiving project' });
+  }
+});
+
+// Get project reports
+router.get('/:projectId/report', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const project = await Project.findById(projectId)
+      .populate('members', 'email')
+      .populate('createdBy', 'email');
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Get all tasks for the project
+    const tasks = await Task.find({ project: projectId })
+      .populate('assignedTo', 'email');
+
+    // Calculate project metrics
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => 
+      task.status === 'completed' || task.status === 'accepted'
+    ).length;
+    const overdueTasks = tasks.filter(task => 
+      new Date(task.deadline) < new Date() && task.status !== 'completed'
+    ).length;
+
+    // Calculate member statistics
+    const memberStats = project.members.map(member => {
+      const memberTasks = tasks.filter(task => 
+        task.assignedTo._id.toString() === member._id.toString()
+      );
+      
+      return {
+        email: member.email,
+        totalAssigned: memberTasks.length,
+        completed: memberTasks.filter(task => 
+          task.status === 'completed' || task.status === 'accepted'
+        ).length,
+        overdue: memberTasks.filter(task => 
+          new Date(task.deadline) < new Date() && task.status !== 'completed'
+        ).length
+      };
+    });
+
+    // Calculate project duration
+    const projectDuration = {
+      start: project.createdAt,
+      deadline: project.deadline,
+      daysRemaining: Math.ceil((new Date(project.deadline) - new Date()) / (1000 * 60 * 60 * 24)),
+      isOverdue: project.status !== 'completed' && new Date(project.deadline) < new Date()
+    };
+
+    // Compile the report
+    const projectReport = {
+      projectDetails: {
+        name: project.name,
+        description: project.description,
+        status: project.status,
+        createdBy: project.createdBy.email,
+        createdAt: project.createdAt,
+        completionRate: totalTasks ? ((completedTasks / totalTasks) * 100).toFixed(2) : 0
+      },
+      taskMetrics: {
+        total: totalTasks,
+        completed: completedTasks,
+        pending: totalTasks - completedTasks,
+        overdue: overdueTasks,
+        completionRate: totalTasks ? ((completedTasks / totalTasks) * 100).toFixed(2) : 0
+      },
+      memberStats,
+      projectDuration: {
+        start: project.createdAt,
+        deadline: project.deadline,
+        daysRemaining: Math.ceil((new Date(project.deadline) - new Date()) / (1000 * 60 * 60 * 24)),
+        isOverdue: project.status !== 'completed' && new Date(project.deadline) < new Date()
+      },
+      taskStatus: {
+        pending: tasks.filter(task => task.status === 'pending').length,
+        inProgress: tasks.filter(task => task.status === 'in-progress').length,
+        completed: tasks.filter(task => task.status === 'completed').length,
+        accepted: tasks.filter(task => task.status === 'accepted').length,
+        overdueTasks: tasks.filter(task => 
+          task.status !== 'completed' && 
+          task.status !== 'accepted' && 
+          new Date(task.deadline) < new Date()
+        ).length
+      }
+    };
+
+    res.json(projectReport);
+  } catch (error) {
+    console.error('Error generating project report:', error);
+    res.status(500).json({ error: 'Error generating project report' });
   }
 });
 

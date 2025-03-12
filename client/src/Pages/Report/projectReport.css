@@ -1,0 +1,285 @@
+.project-report {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #f8fafc;
+}
+
+.back-button {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  color: #1e293b;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: #f8fafc;
+  transform: translateX(-4px);
+}
+
+.report-header {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.report-header h1 {
+  color: #1e293b;
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.project-description {
+  color: #64748b;
+  font-size: 1.1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.report-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.report-card h2 {
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Project Overview Styles */
+.overview-details p {
+  margin: 0.75rem 0;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-badge.completed {
+  background-color: #dcfce7;
+  color: #10b981;
+}
+
+.status-badge.in-progress {
+  background-color: #dbeafe;
+  color: #3b82f6;
+}
+
+.status-badge.pending {
+  background-color: #fef3c7;
+  color: #f59e0b;
+}
+
+.status-badge.planning {
+  background-color: #f5f3ff;
+  color: #8b5cf6;
+}
+
+.overdue-warning {
+  color: #ef4444;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+/* Metrics Grid Styles */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-item {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.metric-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #4361ee;
+  margin-bottom: 0.5rem;
+}
+
+.metric-label {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.metric-item.overdue .metric-value {
+  color: #ef4444;
+}
+
+/* Progress Bar Styles */
+.completion-rate {
+  margin-top: 2rem;
+}
+
+.completion-rate h3 {
+  color: #1e293b;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4361ee, #3851e0);
+  transition: width 0.3s ease;
+}
+
+.completion-percentage {
+  position: absolute;
+  right: 0;
+  top: -1.5rem;
+  color: #4361ee;
+  font-weight: 600;
+}
+
+/* Team Performance Styles */
+.member-stats {
+  display: grid;
+  gap: 1rem;
+}
+
+.member-stat-card {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.member-stat-card h3 {
+  color: #1e293b;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.member-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+
+/* Task Distribution Styles */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.status-item {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.status-count {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #4361ee;
+  margin-bottom: 0.5rem;
+}
+
+.status-label {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Loading and Error States */
+.loading, .error {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.error {
+  color: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .project-report {
+    padding: 1rem;
+  }
+
+  .report-header h1 {
+    font-size: 2rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.report-card.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.report-card.clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.metrics-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.report-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}

@@ -161,6 +161,19 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleProjectClick = (projectId) => {
+    // Store the current token in localStorage before navigation
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No auth token found');
+      // Optionally redirect to login
+      navigate('/');
+      return;
+    }
+    
+    navigate(`/admin/project/${projectId}/tasks`);
+  };
+
   return (
     <div>
       <NavBar userEmail={userEmail} userRole={role}/>
@@ -242,7 +255,7 @@ const AdminDashboard = () => {
                   key={project._id}
                   className="project-card"
                   data-status={project.status}
-                  onClick={() => navigate(`/admin/project/${project._id}/tasks`)}
+                  onClick={() => handleProjectClick(project._id)}
                   style={{ cursor: 'pointer' }}
                 >
                   <h4>{project.name || 'Unnamed Project'}</h4>

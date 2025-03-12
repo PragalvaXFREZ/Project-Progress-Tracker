@@ -62,35 +62,57 @@ const TaskManagement = () => {
   // Fetch functions
   const fetchProjectDetails = useCallback(async () => {
     try {
-      setIsLoading(prev => ({ ...prev, projectDetails: true }));
-      console.log('Fetching project details for ID:', projectId);
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`);
-      const data = await response.json();
-      
-      if (response.ok) {
-        setProjectDetails(data);
-      } else {
-        throw new Error(data.error || 'Failed to fetch project details');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        navigate('/');
+        return;
       }
+
+      setIsLoading(prev => ({ ...prev, projectDetails: true }));
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch project details');
+      }
+      
+      const data = await response.json();
+      setProjectDetails(data);
     } catch (error) {
       console.error('Error fetching project details:', error);
+      if (error.message.includes('auth')) {
+        navigate('/');
+      }
       setError(error);
     } finally {
       setIsLoading(prev => ({ ...prev, projectDetails: false }));
     }
-  }, [projectId]);
+  }, [projectId, navigate]);
 
   const fetchTasks = useCallback(async () => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
       setIsLoading(prev => ({ ...prev, tasks: true }));
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks`);
-      const data = await response.json();
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      if (response.ok) {
-        setTasks(data);
-      } else {
-        throw new Error(data.error || 'Failed to fetch tasks');
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
       }
+      
+      const data = await response.json();
+      setTasks(data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       setTasks([]);
@@ -101,8 +123,16 @@ const TaskManagement = () => {
 
   const fetchProjectMembers = useCallback(async () => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
       setIsLoading(prev => ({ ...prev, members: true }));
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/members`);
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/members`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

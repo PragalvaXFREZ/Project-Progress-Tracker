@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const authMiddleware = require('./middleware/auth');
 
 // Add JWT secret key
 global.JWT_SECRET = '8afbcddc58157dcbb8bfb1817dcb423c962c8acec7991f650137b9b23f9acc1c'; // Replace with a strong random string
@@ -14,15 +15,15 @@ const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/project');
 const taskRoutes = require('./routes/taskRoutes');
 
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
+app.use(express.json());
 app.use(bodyParser.json());
 
-// Add this before your routes
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ 
@@ -30,8 +31,6 @@ app.use((err, req, res, next) => {
     details: err.message 
   });
 });
-
-app.use('/api/projects', require('./routes/project'));
 
 // MongoDB connection
 mongoose.connect('mongodb://localhost:27017/project', {
@@ -43,8 +42,9 @@ mongoose.connect('mongodb://localhost:27017/project', {
   console.error('Error connecting to MongoDB', err);
 });
 
-// Routes
+// Routes with correct order
 app.use('/api', authRoutes);
+app.use('/api/projects', authMiddleware);
 app.use('/api/projects', projectRoutes);
 app.use('/api', require('./routes/taskRoutes')); 
 
