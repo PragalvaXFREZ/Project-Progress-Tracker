@@ -47,6 +47,18 @@ const TaskManagement = () => {
     return true;
   };
 
+  // Add this function after your state declarations
+  const calculateProjectProgress = useCallback(() => {
+    if (!tasks || tasks.length === 0) {
+      return 0; // Initial phase
+    }
+  
+    const completedTasks = tasks.filter(task => task.status === 'completed' || task.status === 'accepted').length;
+    const totalTasks = tasks.length;
+    
+    return Math.round((completedTasks / totalTasks) * 100);
+  }, [tasks]);
+
   // Fetch functions
   const fetchProjectDetails = useCallback(async () => {
     try {
@@ -294,6 +306,7 @@ const TaskManagement = () => {
                     'Unknown date'}
                 </p>
               </div>
+              
               <div className="project-status">
                 <h4>Project Status: {projectDetails?.status}</h4>
                 {projectDetails?.status !== 'completed' && (
@@ -355,7 +368,81 @@ const TaskManagement = () => {
           </div>
         )}
 
-        
+        <div className="project-statistics">
+          <h3>Project Statistics</h3>
+          <div className="stats-grid">
+            <div className="stats-card progress-card">
+              <h4>Overall Progress</h4>
+              <div className="progress-info">
+                <span className="progress-percentage">{calculateProjectProgress()}%</span>
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill"
+                  style={{ 
+                    width: `${calculateProjectProgress()}%`,
+                    backgroundColor: calculateProjectProgress() === 100 ? '#10b981' : '#4361ee'
+                  }}
+                />
+              </div>
+              <p className="progress-status">
+                {tasks.length === 0 
+                  ? "Initial Phase - No tasks created yet"
+                  : calculateProjectProgress() === 100
+                  ? "All tasks completed!"
+                  : `${tasks.filter(task => task.status === 'completed' || task.status === 'accepted').length} of ${tasks.length} tasks completed`
+                }
+              </p>
+            </div>
+
+            <div className="stats-card">
+              <h4>Task Status</h4>
+              <div className="task-stats">
+                <div className="stat-item">
+                  <span className="stat-label">Active Tasks</span>
+                  <span className="stat-value">
+                    {tasks.filter(task => task.status === 'pending' || task.status === 'in-progress').length}
+                  </span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Completed Tasks</span>
+                  <span className="stat-value">
+                    {tasks.filter(task => task.status === 'completed' || task.status === 'accepted').length}
+                  </span>
+                </div>
+                <div className="stat-item overdue">
+                  <span className="stat-label">Overdue Tasks</span>
+                  <span className="stat-value">
+                    {tasks.filter(task => new Date(task.deadline) < new Date() && task.status !== 'completed').length}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="stats-card">
+              <h4>Team Members</h4>
+              <div className="members-list">
+                {projectMembers
+                  .filter(member => member._id !== projectDetails?.createdBy?._id)
+                  .map(member => (
+                    <div key={member._id} className="member-item">
+                      <span className="member-email">{member.email}</span>
+                      <div className="member-tasks">
+                        <span className="assigned-tasks">
+                          Assigned: {tasks.filter(task => task.assignedTo._id === member._id).length}
+                        </span>
+                        <span className="completed-tasks">
+                          Completed: {tasks.filter(task => task.assignedTo._id === member._id && 
+                            (task.status === 'completed' || task.status === 'accepted')).length}
+                        </span>
+                      </div>
+                    </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="create-task">
           <h3>Create New Task</h3>
           <form onSubmit={handleCreateTask}>

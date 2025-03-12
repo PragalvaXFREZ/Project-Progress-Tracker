@@ -3,9 +3,11 @@
     max-width: 1200px;
     margin: 0 auto;
   }
-  
+  body{
+    background-color: white;
+  }
   .create-task {
-    background-color: #f5f5f5;
+    background-color: #66666629;
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -86,7 +88,7 @@
   }
   
   .task-card {
-    background-color: white;
+    background-color: #66666642;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -175,6 +177,7 @@
   
   .project-details {
     margin-top: 1rem;
+    background-color: #66666629;
   }
   
   .project-details h2 {
@@ -386,4 +389,200 @@
   ::-webkit-calendar-picker-cell:hover {
     background-color: rgba(74, 144, 226, 0.1);
     border-radius: 4px;
+  }
+
+  .project-progress {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .progress-info h4 {
+    color: black;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .progress-info span {
+    color: black;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+  }
+  
+  .progress-status {
+    margin-top: 0.75rem;
+    color: black;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .project-progress {
+      background: #EAF7E9;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  
+    .progress-info h4 {
+      color: black;
+    }
+  
+    .progress-bar {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  
+    .progress-status {
+      color: black;
+    }
+  }
+
+  .project-statistics {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+  
+  .project-statistics h3 {
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .stats-card {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .stats-card h4 {
+    color: #1e293b;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .progress-card {
+    background: white;
+  }
+  
+  .progress-percentage {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #4361ee;
+  }
+  
+  .task-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .stat-item.overdue {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+  
+  .stat-label {
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+  
+  .stat-value {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  
+  .members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .member-item {
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .member-email {
+    display: block;
+    color: #1e293b;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .member-tasks {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+  
+  .assigned-tasks, .completed-tasks {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+  }
+  
+  .progress-status {
+    color: #64748b;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 0.75rem;
   }

@@ -255,7 +255,6 @@ router.patch('/:projectId/status', async (req, res) => {
   }
 });
 
-// Archive a project (update status to completed)
 router.patch('/:projectId/archive', async (req, res) => {
   try {
     const project = await Project.findById(req.params.projectId);
