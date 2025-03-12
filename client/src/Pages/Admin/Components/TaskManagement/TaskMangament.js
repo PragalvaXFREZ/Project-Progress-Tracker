@@ -293,7 +293,7 @@ const TaskManagement = () => {
           {isLoading.projectDetails ? (
             <div className="loading">Loading project details...</div>
           ) : (
-            <div className="project-details">
+            <div className="project-details" data-status={projectDetails?.status || 'pending'}>
               <h2>{projectDetails?.name || 'Unnamed Project'}</h2>
               <p className="project-description">
                 {projectDetails?.description || 'No description available'}
@@ -502,15 +502,35 @@ const TaskManagement = () => {
           ) : (
             <div className="tasks-grid">
               {tasks.map(task => (
-                <div key={task._id} className={`task-card ${task.isLocked ? 'locked' : ''}`}>
+                <div 
+                  key={task._id} 
+                  className={`task-card ${task.isLocked ? 'locked' : ''}`}
+                  data-status={task.status}
+                  data-overdue={new Date(task.deadline) < new Date() && task.status !== 'completed'}
+                >
                   <h4>{task.title}</h4>
-                  <p>{task.description}</p>
-                  <p>Assigned to: {task.assignedTo.email}</p>
-                  <p>Deadline: {new Date(task.deadline).toLocaleString()}</p>
-                  <p>Status: {task.status}</p>
+                  <p className="task-description">{task.description}</p>
+                  <div className="task-meta">
+                    <p>
+                      <span className="meta-label">Assigned to:</span> 
+                      {task.assignedTo.email}
+                    </p>
+                    <p>
+                      <span className="meta-label">Deadline:</span> 
+                      <span className="deadline-text">
+                        {new Date(task.deadline).toLocaleString()}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="meta-label">Status:</span> 
+                      <span className={`status-badge ${task.status}`}>
+                        {task.status}
+                      </span>
+                    </p>
+                  </div>
                   {task.isLocked && (
                     <div className="locked-badge">
-                      <span> Project Completed</span>
+                      <span>🔒 Project Completed</span>
                     </div>
                   )}
                 </div>
