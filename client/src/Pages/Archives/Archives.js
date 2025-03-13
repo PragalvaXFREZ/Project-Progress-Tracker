@@ -72,6 +72,38 @@ const Archives = () => {
     };
   }, [navigate]);
 
+  const handleDeleteProject = async (projectId, e) => {
+    e.stopPropagation();
+    
+    if (!window.confirm('Are you sure you want to permanently delete this archived project?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete project');
+      }
+
+      setArchivedProjects(prevProjects => 
+        prevProjects.filter(project => project._id !== projectId)
+      );
+      alert('Project deleted successfully');
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      alert(error.message || 'Error deleting project. Please try again.');
+    }
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
 
@@ -86,7 +118,24 @@ const Archives = () => {
           ) : (
             archivedProjects.map((project) => (
               <div key={project._id} className="archived-project-card">
-                <h3>{project.name}</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                  <h3>{project.name}</h3>
+                  {role === 'admin' && (
+                    <button
+                      onClick={(e) => handleDeleteProject(project._id, e)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'red',
+                        fontSize: '1.2em',
+                        padding: '5px'
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
                 <p>Description: {project.description}</p>
                 <p>Status: {project.status}</p>
                 <p>Deadline: {new Date(project.deadline).toLocaleDateString()}</p>
