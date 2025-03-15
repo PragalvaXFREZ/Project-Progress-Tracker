@@ -242,22 +242,22 @@ const TaskManagement = () => {
     }
   };
 
-  // Update handleDeleteProject
+  // Update the handleDeleteProject function
   const handleDeleteProject = async () => {
     try {
-      if (deleteConfirmation !== projectDetails?.name) {
-        alert("Project name doesn't match");
+      // Compare without trimming to preserve intentional spaces
+      if (!projectDetails?.name || deleteConfirmation !== projectDetails.name) {
+        alert(`Names don't match.\nPlease enter the exact project name: "${projectDetails?.name}"`);
         return;
       }
-
-      console.log('Attempting to delete project:', projectId);
+  
+      // Rest of your delete logic
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
         method: 'DELETE',
         headers: getAuthHeaders()
       });
-
+  
       if (!response.ok) {
-    
         const errorData = await response.json().catch(() => ({
           error: 'Failed to delete project'
         }));
@@ -315,6 +315,31 @@ const TaskManagement = () => {
       await handleStatusUpdate('completed');
     }
     setShowCompleteModal(false);
+  };
+
+  // Add this new function after handleProjectCompletion
+  const handleTaskStatusChange = async (taskId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks/${taskId}/status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: newStatus })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update task status');
+      }
+  
+      const updatedTask = await response.json();
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task._id === taskId ? updatedTask : task
+        )
+      );
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      alert(`Failed to update task status: ${error.message}`);
+    }
   };
 
   if (error) {
@@ -394,8 +419,9 @@ const TaskManagement = () => {
               <input
                 type="text"
                 value={deleteConfirmation}
-                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                onChange={(e) => setDeleteConfirmation(e.target.value)} // Removed trim()
                 placeholder="Type project name to confirm"
+                className="delete-confirmation-input"
               />
               <div className="delete-modal-actions">
                 <button
@@ -574,9 +600,22 @@ const TaskManagement = () => {
                     </p>
                     <p>
                       <span className="meta-label">Status:</span> 
-                      <span className={`status-badge ${task.status}`}>
-                        {task.status}
-                      </span>
+                      {task.status === 'review' ? (
+                        <select
+                          value={task.status}
+                          onChange={(e) => handleTaskStatusChange(task._id, e.target.value)}
+                          className="status-select"
+                          disabled={task.isLocked}
+                        >
+                          <option value="review">Review</option>
+                          <option value="accepted">Accept</option>
+                          <option value="rejected">Reject</option>
+                        </select>
+                      ) : (
+                        <span className={`status-badge ${task.status}`}>
+                          {task.status}
+                        </span>
+                      )}
                     </p>
                   </div>
                   {task.isLocked && (

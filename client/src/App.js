@@ -4,8 +4,8 @@ import LoginSignup from './Pages/LoginSignup/LoginSignup';
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import UserDashboard from './Pages/User/UserDashboard';
 import TaskManagement from './Pages/Admin/Components/TaskManagement/TaskMangament';
-import Archives from './Pages/Archives/Archives';
-import ProjectReport from './Pages/Report/projectReport'; // Changed from ProjectReport to projectReport
+import Archives from './Pages/Admin/Components/Archives/Archives';
+import ProjectReport from './Pages/Admin/Components/Report/projectReport'; // Changed from ProjectReport to projectReport
 
 function App() {
   return (

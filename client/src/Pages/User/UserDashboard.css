@@ -45,7 +45,7 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.task-card[data-status="completed"] {
+.task-card[data-status="review"] {
   border-left: 4px solid #28a745;
 }
 
@@ -99,4 +99,16 @@
   background-color: #f8d7da;
   border: 1px solid #f5c6cb;
   border-radius: 4px;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  display: inline-block;
+}
+
+.status-badge.accepted {
+  background-color: #10b981;
+  color: white;
 }

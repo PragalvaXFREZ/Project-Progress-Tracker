@@ -34,17 +34,26 @@ router.post('/projects/:projectId/tasks', async (req, res) => {
   }
 });
 
-// Update task status
-router.patch('/tasks/:taskId/status', async (req, res) => {
+// Update the existing route to match the frontend endpoint
+router.patch('/projects/:projectId/tasks/:taskId/status', async (req, res) => {
   try {
+    const { taskId } = req.params;
+    const { status } = req.body;
+
     const task = await Task.findByIdAndUpdate(
-      req.params.taskId,
-      { status: req.body.status },
+      taskId,
+      { status },
       { new: true }
     ).populate('assignedTo', 'email');
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
     res.json(task);
   } catch (error) {
-    res.status(500).json({ error: 'Error updating task status' });
+    console.error('Error updating task status:', error);
+    res.status(500).json({ message: 'Error updating task status', error: error.message });
   }
 });
 

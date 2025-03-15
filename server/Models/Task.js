@@ -11,10 +11,10 @@ const taskSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'in-progress', 'completed', 'accepted'],
+    enum: ['pending', 'in-progress', 'completed', 'accepted', 'review', 'rejected'], 
     default: 'pending'
   },
-  projectId: {  // Changed from project to projectId
+  projectId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
     required: true

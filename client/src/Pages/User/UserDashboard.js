@@ -9,7 +9,7 @@ const UserDashboard = () => {
   const [userEmail, setUserEmail] = useState('');
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [setError] = useState(null);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
 
@@ -99,10 +99,12 @@ const UserDashboard = () => {
     }
   };
 
+  // Replace the handleStatusUpdate function with this corrected version
   const handleStatusUpdate = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}/status`, {
+      // Fix the API endpoint URL to match your backend route
+      const response = await fetch(`http://localhost:5000/api/projects/${selectedProject._id}/tasks/${taskId}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -111,9 +113,8 @@ const UserDashboard = () => {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         if (data.error === 'Project is completed') {
           alert('This project has been marked as complete. Task status cannot be changed.');
           return;
@@ -121,18 +122,24 @@ const UserDashboard = () => {
         throw new Error(data.error || 'Failed to update task status');
       }
 
+      const updatedTask = await response.json();
       setTasks(tasks.map(task => 
-        task._id === taskId ? { ...task, status: newStatus } : task
+        task._id === taskId ? { ...task, ...updatedTask } : task
       ));
     } catch (error) {
       console.error('Error updating task status:', error);
-      setError(error.message);
+      setError(error.message || 'Failed to update task status');
     }
   };
 
   return (
     <div>
       <NavBar userEmail={userEmail} />
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
       <div className="user-dashboard">
         <h2>User Dashboard</h2>
         
@@ -180,15 +187,20 @@ const UserDashboard = () => {
                       <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleDateString()}</p>
                       <div className="task-status">
                         <label>Status: </label>
-                        <select
-                          value={task.status}
-                          onChange={(e) => handleStatusUpdate(task._id, e.target.value)}
-                          disabled={selectedProject?.status === 'completed'}
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="in-progress">In Progress</option>
-                          <option value="completed">Completed</option>
-                        </select>
+                        {task.status === 'accepted' ? (
+                          <span className="status-badge accepted">Accepted</span>
+                        ) : (
+                          <select
+                            value={task.status}
+                            onChange={(e) => handleStatusUpdate(task._id, e.target.value)}
+                            disabled={selectedProject?.status === 'completed' || task.status === 'accepted'}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="review">In Review</option>
+                            {task.status === 'accepted' && <option value="accepted">Accepted</option>}
+                          </select>
+                        )}
                       </div>
                       {selectedProject?.status === 'completed' && (
                         <div className="locked-badge">

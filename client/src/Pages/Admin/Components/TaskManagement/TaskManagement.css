@@ -340,10 +340,10 @@
     cursor: pointer;
   }
   
-  .delete-confirm-btn:disabled {
+  /* .delete-confirm-btn:disabled {
     background-color: #6c757d;
     cursor: not-allowed;
-  }
+  } */
   
   .delete-cancel-btn {
     background-color: #6c757d;
@@ -778,3 +778,44 @@
     color: #dc2626;
     font-weight: 600;
   }
+
+  /* Add these styles to your existing CSS file */
+.task-meta .status-select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.task-meta .status-select:hover {
+  border-color: #4361ee;
+}
+
+.status-badge.accepted {
+  background-color: #10b981;
+}
+
+.status-badge.rejected {
+  background-color: #ef4444;
+}
+
+.status-badge.review {
+  background-color: #f59e0b;
+}
+
+.delete-confirm-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.delete-confirm-btn:not(:disabled) {
+  background-color: #ef4444;
+  cursor: pointer;
+}
+
+.delete-confirm-btn:not(:disabled):hover {
+  background-color: #dc2626;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Archives.css';
-import NavBar from '../Admin/Components/Nav Bar/NavBar';
+import NavBar from '../Nav Bar/NavBar';
 
 const Archives = () => {
   const [archivedProjects, setArchivedProjects] = useState([]);
