@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from './components/NavBar/NavBar';
+import Personal from './components/Personal Stats/Personal';
 import './UserDashboard.css';
 
 const UserDashboard = () => {
@@ -10,8 +11,8 @@ const UserDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activeView, setActiveView] = useState('tasks');
   const navigate = useNavigate();
-
 
   //fetching the projects
   const fetchProjects = async () => {
@@ -99,11 +100,9 @@ const UserDashboard = () => {
     }
   };
 
-  // Replace the handleStatusUpdate function with this corrected version
   const handleStatusUpdate = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      // Fix the API endpoint URL to match your backend route
       const response = await fetch(`http://localhost:5000/api/projects/${selectedProject._id}/tasks/${taskId}/status`, {
         method: 'PATCH',
         headers: {
@@ -143,80 +142,101 @@ const UserDashboard = () => {
       <div className="user-dashboard">
         <h2>User Dashboard</h2>
         
-        <div className="project-selector">
-          <h3>Your Projects</h3>
-          <select 
-            value={selectedProject?._id || ''}
-            onChange={(e) => handleProjectSelect(e.target.value)}
+        <div className="view-selector">
+          <button 
+            className={`view-button ${activeView === 'tasks' ? 'active' : ''}`}
+            onClick={() => setActiveView('tasks')}
           >
-            <option value="">Select a project</option>
-            {projects.map(project => (
-              <option key={project._id} value={project._id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+            Tasks View
+          </button>
+          <button 
+            className={`view-button ${activeView === 'stats' ? 'active' : ''}`}
+            onClick={() => setActiveView('stats')}
+          >
+            Personal Stats
+          </button>
         </div>
 
-        {selectedProject && (
-          <div className="project-details">
-            <h3>{selectedProject.name}</h3>
-            <div className="project-info">
-              <p><strong>Description:</strong> {selectedProject.description || 'No description available'}</p>
-              <p><strong>Created by:</strong> {selectedProject.createdBy?.email || 'Unknown'}</p>
-              <p><strong>Total Members:</strong> {selectedProject.members?.length || 0}</p>
-              <p><strong>Created on:</strong> {new Date(selectedProject.createdAt).toLocaleDateString()}</p>
+        {activeView === 'stats' ? (
+          <Personal />
+        ) : (
+          <>
+            <div className="project-selector">
+              <h3>Your Projects</h3>
+              <select 
+                value={selectedProject?._id || ''}
+                onChange={(e) => handleProjectSelect(e.target.value)}
+              >
+                <option value="">Select a project</option>
+                {projects.map(project => (
+                  <option key={project._id} value={project._id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="project-tasks">
-              <h3>Your Tasks</h3>
-              {isLoading ? (
-                <p>Loading tasks...</p>
-              ) : tasks.length === 0 ? (
-                <p>No tasks assigned to you in this project.</p>
-              ) : (
-                <div className="tasks-grid">
-                  {tasks.map(task => (
-                    <div 
-                      key={task._id} 
-                      className={`task-card ${selectedProject?.status === 'completed' ? 'locked' : ''}`} 
-                      data-status={task.status}
-                    >
-                      <h4>{task.title}</h4>
-                      <p>{task.description}</p>
-                      <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleDateString()}</p>
-                      <div className="task-status">
-                        <label>Status: </label>
-                        {task.status === 'accepted' ? (
-                          <span className="status-badge accepted">Accepted</span>
-                        ) : (
-                          <select
-                            value={task.status}
-                            onChange={(e) => handleStatusUpdate(task._id, e.target.value)}
-                            disabled={selectedProject?.status === 'completed' || task.status === 'accepted'}
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="review">In Review</option>
-                            {task.status === 'accepted' && <option value="accepted">Accepted</option>}
-                          </select>
-                        )}
-                      </div>
-                      {selectedProject?.status === 'completed' && (
-                        <div className="locked-badge">
-                          <span>🔒 Project Completed</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            {selectedProject && (
+              <div className="project-details">
+                <h3>{selectedProject.name}</h3>
+                <div className="project-info">
+                  <p><strong>Description:</strong> {selectedProject.description || 'No description available'}</p>
+                  <p><strong>Created by:</strong> {selectedProject.createdBy?.email || 'Unknown'}</p>
+                  <p><strong>Total Members:</strong> {selectedProject.members?.length || 0}</p>
+                  <p><strong>Created on:</strong> {new Date(selectedProject.createdAt).toLocaleDateString()}</p>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {projects.length === 0 && (
-          <p className="no-projects">You are not a member of any projects yet.</p>
+                <div className="project-tasks">
+                  <h3>Your Tasks</h3>
+                  {isLoading ? (
+                    <p>Loading tasks...</p>
+                  ) : tasks.length === 0 ? (
+                    <p>No tasks assigned to you in this project.</p>
+                  ) : (
+                    <div className="tasks-grid">
+                      {tasks.map(task => (
+                        <div 
+                          key={task._id} 
+                          className={`task-card ${selectedProject?.status === 'completed' ? 'locked' : ''}`} 
+                          data-status={task.status}
+                        >
+                          <h4>{task.title}</h4>
+                          <p>{task.description}</p>
+                          <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleDateString()}</p>
+                          <div className="task-status">
+                            <label>Status: </label>
+                            {task.status === 'accepted' ? (
+                              <span className="status-badge accepted">Accepted</span>
+                            ) : (
+                              <select
+                                value={task.status}
+                                onChange={(e) => handleStatusUpdate(task._id, e.target.value)}
+                                disabled={selectedProject?.status === 'completed' || task.status === 'accepted'}
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="review">In Review</option>
+                                {task.status === 'accepted' && <option value="accepted">Accepted</option>}
+                              </select>
+                            )}
+                          </div>
+                          {selectedProject?.status === 'completed' && (
+                            <div className="locked-badge">
+                              <span>🔒 Project Completed</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {projects.length === 0 && (
+              <p className="no-projects">You are not a member of any projects yet.</p>
+            )}
+          </>
         )}
       </div>
     </div>

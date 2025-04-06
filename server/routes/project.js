@@ -192,9 +192,8 @@ router.get('/archived/user/:userId', async (req, res) => {
 // Add the reports route BEFORE the :projectId routes
 router.get('/reports', async (req, res) => {
   try {
+    // Get all projects
     const userId = req.user.userId;
-    console.log('Current user ID:', userId);
-
     const projects = await Project.find({
       $or: [
         { createdBy: userId },
@@ -206,6 +205,7 @@ router.get('/reports', async (req, res) => {
 
     console.log('Projects found:', projects.length);
 
+    // Get all tasks for all projects
     const projectReports = await Promise.all(projects.map(async (project) => {
       const tasks = await Task.find({ projectId: project._id })
         .populate('assignedTo', 'email')
@@ -213,6 +213,7 @@ router.get('/reports', async (req, res) => {
 
       console.log(`Tasks for ${project.name}:`, tasks.length);
 
+      // Calculate metrics
       const totalTasks = tasks.length;
       const completedTasks = tasks.filter(task => 
         task.status === 'completed' || task.status === 'accepted'
@@ -226,12 +227,14 @@ router.get('/reports', async (req, res) => {
         new Date(task.deadline) < new Date()
       ).length;
 
+      // Return report data
       return {
         _id: project._id,
         name: project.name,
         description: project.description,
         status: project.status,
         createdAt: project.createdAt,
+        createdBy: project.createdBy.email,
         deadline: project.deadline,
         metrics: {
           total: totalTasks,
@@ -240,12 +243,13 @@ router.get('/reports', async (req, res) => {
           overdue: overdueTasks,
           completionRate: totalTasks ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0"
         },
-        isOverdue: project.status !== 'completed' && project.deadline < new Date()
+        isOverdue: project.status !== 'completed' && new Date(project.deadline) < new Date()
       };
     }));
 
-    console.log('Processed reports:', JSON.stringify(projectReports, null, 2));
+    console.log('Generated reports:', projectReports.length);
     res.json(projectReports);
+
   } catch (error) {
     console.error('Error in /reports:', error);
     res.status(500).json({ error: 'Error fetching reports' });
@@ -402,6 +406,128 @@ router.get('/:projectId/report', async (req, res) => {
         };
     }));
 
+    // Calculate status change metrics
+    const formatDuration = (startDate, endDate) => {
+      const diff = new Date(endDate) - new Date(startDate);
+      const minutes = Math.ceil(diff / (1000 * 60));
+      const hours = Math.ceil(diff / (1000 * 60 * 60));
+      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    
+      if (minutes < 60) {
+        return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+      } else if (hours < 24) {
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+      } else {
+        return `${days} ${days === 1 ? 'day' : 'days'}`;
+      }
+    };
+
+    const taskStatusChanges = tasks.map(task => ({
+      taskId: task._id,
+      taskTitle: task.title,
+      assignedTo: task.assignedTo.email,
+      statusHistory: task.statusHistory.map((change, index) => {
+        const startDate = index === 0 ? task.createdAt : task.statusHistory[index - 1].changedAt;
+        const endDate = change.changedAt;
+
+        return {
+          from: change.from,
+          to: change.to,
+          changedAt: change.changedAt,
+          duration: formatDuration(startDate, endDate)
+        };
+      })
+    }));
+    
+    // Calculate average times
+    const calculateAverageDuration = (tasks, targetStatus) => {
+      const durations = [];
+      
+      tasks.forEach(task => {
+        if (task.statusHistory?.length) {
+          const statusChange = task.statusHistory.find(change => change.to === targetStatus);
+          if (statusChange) {
+            const diff = new Date(statusChange.changedAt) - new Date(task.createdAt);
+            const minutes = Math.ceil(diff / (1000 * 60));
+            durations.push(minutes);
+          }
+        }
+      });
+    
+      if (durations.length === 0) return 'N/A';
+      const avgMinutes = durations.reduce((a, b) => a + b, 0) / durations.length;
+      
+      if (avgMinutes < 60) {
+        return `${Math.ceil(avgMinutes)} minutes`;
+      } else if (avgMinutes < 1440) { // 24 hours * 60 minutes
+        const hours = Math.ceil(avgMinutes / 60);
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+      } else {
+        const days = Math.ceil(avgMinutes / 1440);
+        return `${days} ${days === 1 ? 'day' : 'days'}`;
+      }
+    };
+
+    const calculateTaskTimings = (tasks) => {
+      const timings = tasks.map(task => {
+        // Skip if no status history
+        if (!task.statusHistory?.length) return null;
+    
+        const assignmentDate = new Date(task.createdAt);
+        let firstReviewDate = null;
+        let adminResponseDate = null;
+        let completionDate = null;
+    
+        // Go through status history chronologically
+        task.statusHistory.forEach(change => {
+          const changeDate = new Date(change.changedAt);
+          
+          // First time task is submitted for review
+          if (change.to === 'review' && !firstReviewDate) {
+            firstReviewDate = changeDate;
+          }
+          
+          // Admin's first accept/reject decision
+          if ((change.to === 'accepted' || change.to === 'rejected') && firstReviewDate && !adminResponseDate) {
+            adminResponseDate = changeDate;
+          }
+    
+          // Final completion
+          if (change.to === 'completed') {
+            completionDate = changeDate;
+          }
+        });
+    
+        return {
+          timeToReview: firstReviewDate ? firstReviewDate - assignmentDate : null,
+          adminResponseTime: adminResponseDate && firstReviewDate ? adminResponseDate - firstReviewDate : null,
+          totalCompletionTime: completionDate ? completionDate - assignmentDate : null
+        };
+      }).filter(Boolean); // Remove null entries
+    
+      // Calculate averages
+      const calculateAverage = (times) => {
+        if (!times.length) return 'N/A';
+        const avgMinutes = times.reduce((sum, time) => sum + time, 0) / (times.length * 60000); // Convert to minutes
+    
+        if (avgMinutes < 60) {
+          return `${Math.ceil(avgMinutes)} minutes`;
+        } else if (avgMinutes < 1440) { // 24 hours
+          const hours = Math.ceil(avgMinutes / 60);
+          return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+        } else {
+          const days = Math.ceil(avgMinutes / 1440);
+          return `${days} ${days === 1 ? 'day' : 'days'}`;
+        }
+      };
+    
+      return {
+        averageTimeToReview: calculateAverage(timings.map(t => t.timeToReview).filter(Boolean)),
+        averageAdminResponseTime: calculateAverage(timings.map(t => t.adminResponseTime).filter(Boolean)),
+        averageTotalCompletionTime: calculateAverage(timings.map(t => t.totalCompletionTime).filter(Boolean))
+      };
+    };
+
     const projectReport = {
       projectDetails: {
         name: project.name,
@@ -430,10 +556,24 @@ router.get('/:projectId/report', async (req, res) => {
         inProgress: tasks.filter(task => task.status === 'in-progress').length,
         completed: tasks.filter(task => task.status === 'completed').length,
         accepted: tasks.filter(task => task.status === 'accepted').length
-      }
+      },
+      taskStatusChanges,
+      averageMetrics: {
+        timeToReview: calculateAverageDuration(tasks, 'review'),
+        timeToAcceptance: calculateAverageDuration(tasks, 'accepted'),
+        timeToCompletion: calculateAverageDuration(tasks, 'completed')
+      },
+      averageMetrics: calculateTaskTimings(tasks)
     };
 
-    console.log('Generated report:', JSON.stringify(projectReport, null, 2));
+    // Inside your project report route
+    projectReport.averageMetrics = {
+      averageTimeToReview: calculateTaskTimings(tasks).averageTimeToReview,
+      averageAdminResponseTime: calculateTaskTimings(tasks).averageAdminResponseTime,
+      averageTotalCompletionTime: calculateTaskTimings(tasks).averageTotalCompletionTime
+    };
+
+    console.log('Sending metrics:', projectReport.averageMetrics);
     res.json(projectReport);
   } catch (error) {
     console.error('Error generating project report:', error);

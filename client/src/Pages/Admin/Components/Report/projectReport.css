@@ -73,10 +73,11 @@
 }
 
 .status-badge {
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .status-badge.completed {
@@ -331,4 +332,230 @@
   background-color: #fee2e2;
   border-radius: 4px;
   white-space: nowrap;
+}
+
+/* Status Changes Card */
+.status-changes {
+  grid-column: span 2;
+  max-height: 600px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.status-timeline {
+  margin-top: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-grow: 1;
+  padding-right: 0.5rem;
+}
+
+/* Custom scrollbar styling */
+.status-timeline::-webkit-scrollbar {
+  width: 6px;
+}
+
+.status-timeline::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.status-timeline::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.status-timeline::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Task timeline container */
+.task-timeline {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+/* Status changes list */
+.status-changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  overflow: hidden; /* Remove second scrollbar */
+}
+
+.status-change-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+  min-width: 0; /* Prevent content overflow */
+}
+
+.status-timeline {
+  margin-top: 1rem;
+}
+
+.task-timeline {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.status-changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.status-change-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+  flex-wrap: wrap; /* Allow content to wrap */
+}
+
+.timestamp {
+  font-size: 0.9em;
+  color: #64748b;
+  min-width: 150px; /* Reduced from 180px */
+}
+
+.status-transition {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap; /* Allow status badges to wrap */
+}
+
+.arrow {
+  color: #64748b;
+}
+
+.duration {
+  margin-left: auto;
+  font-size: 0.9em;
+  color: #64748b;
+}
+
+.status-metrics {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.avg-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.avg-metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.avg-metric-item .metric-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #0f172a;
+}
+
+.avg-metric-item .metric-label {
+  font-size: 0.9em;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.task-selector {
+  margin: 1rem 0;
+}
+
+.task-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  background-color: white;
+  font-size: 1rem;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+.task-select:hover {
+  border-color: #94a3b8;
+}
+
+.task-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.assigned-to {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.status-change-item {
+  background-color: #f8fafc;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.status-change-item:hover {
+  background-color: #f1f5f9;
+  transform: translateX(4px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .status-change-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .timestamp {
+    min-width: unset;
+  }
+
+  .duration {
+    margin-left: 0;
+    width: 100%;
+  }
 }

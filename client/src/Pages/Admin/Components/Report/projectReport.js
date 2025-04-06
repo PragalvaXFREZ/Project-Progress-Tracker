@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import NavBar from '../Nav Bar/NavBar';
 import './projectReport.css';
+import TaskTimings from './TaskTimings';
 
 const ProjectReport = () => {
   const [report, setReport] = useState(null);
-  const [reports, setReports] = useState([]); // Add this for all reports
+  const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null); // Add this line
   const { projectId } = useParams();
   const navigate = useNavigate();
 
@@ -216,6 +218,66 @@ const ProjectReport = () => {
               </div>
             </div>
           </div>
+
+          <div className="report-card status-changes">
+            <h2>Status Change Analysis</h2>
+            
+            {/* Add the task selector dropdown */}
+            <div className="task-selector">
+              <select 
+                onChange={(e) => setSelectedTask(e.target.value)} 
+                value={selectedTask || ''}
+                className="task-select"
+              >
+                <option value="">Select a task to view details</option>
+                {report.taskStatusChanges && report.taskStatusChanges.map((task, index) => (
+                  <option key={index} value={task.taskId}>
+                    {task.taskTitle}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="status-timeline">
+              {selectedTask && report.taskStatusChanges
+                .filter(task => task.taskId === selectedTask)
+                .map((task, index) => (
+                  <div key={index} className="task-timeline">
+                    <div className="task-header">
+                      <h4>{task.taskTitle}</h4>
+                      <p className="assigned-to">
+                        Assigned to: {task.assignedTo}
+                      </p>
+                    </div>
+                    <div className="status-changes-list">
+                      {task.statusHistory.map((change, changeIndex) => (
+                        <div key={changeIndex} className="status-change-item">
+                          <span className="timestamp">
+                            {new Date(change.changedAt).toLocaleString()}
+                          </span>
+                          <div className="status-transition">
+                            <span className={`status-badge ${change.from}`}>
+                              {change.from}
+                            </span>
+                            <span className="arrow">→</span>
+                            <span className={`status-badge ${change.to}`}>
+                              {change.to}
+                            </span>
+                          </div>
+                          {change.duration && (
+                            <span className="duration">
+                              Duration: {change.duration}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+              ))}
+            </div>        
+          </div>
+
+          <TaskTimings averageMetrics={report.averageMetrics} />
         </div>
       </div>
     </div>

@@ -40,17 +40,33 @@ router.patch('/projects/:projectId/tasks/:taskId/status', async (req, res) => {
     const { taskId } = req.params;
     const { status } = req.body;
 
-    const task = await Task.findByIdAndUpdate(
-      taskId,
-      { status },
-      { new: true }
-    ).populate('assignedTo', 'email');
-
+    const task = await Task.findById(taskId);
+    
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
     }
 
-    res.json(task);
+    // Store the previous status before updating
+    const previousStatus = task.status;
+
+    // Add the status change to history without changedBy
+    task.statusHistory.push({
+      from: previousStatus,
+      to: status,
+      changedAt: new Date()
+    });
+
+    // Update task status
+    task.status = status === 'accepted' ? 'completed' : status;
+
+    await task.save();
+
+    const updatedTask = await Task.findById(taskId)
+      .populate('assignedTo', 'email')
+      .populate('statusHistory.changedBy', 'email');
+
+    res.json(updatedTask);
+
   } catch (error) {
     console.error('Error updating task status:', error);
     res.status(500).json({ message: 'Error updating task status', error: error.message });

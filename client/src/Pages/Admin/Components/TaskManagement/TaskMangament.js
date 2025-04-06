@@ -317,7 +317,6 @@ const TaskManagement = () => {
     setShowCompleteModal(false);
   };
 
-  // Add this new function after handleProjectCompletion
   const handleTaskStatusChange = async (taskId, newStatus) => {
     try {
       const response = await fetch(`http://localhost:5000/api/projects/${projectId}/tasks/${taskId}/status`, {
@@ -651,8 +650,10 @@ const TaskManagement = () => {
           </div>
         )}
       </div>
+      
     </div>
   );
+  
 };
 
 export default TaskManagement;

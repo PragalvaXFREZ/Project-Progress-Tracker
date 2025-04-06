@@ -16,9 +16,6 @@ const NavBar = ({ userEmail }) => {
         <span className="welcome-text">Welcome, {userEmail}</span>
       </div>
       <div className="navbar-right">
-        <button onClick={() => navigate('/user')} >Projects</button>
-        <button onClick={() => navigate('/user/tasks') } >Tasks</button>
-        <button onClick={() => navigate('/user/task-report')}>Task Report</button>
         <button onClick={handleLogout} className="logout-btn">Logout</button>
       </div>
     </nav>

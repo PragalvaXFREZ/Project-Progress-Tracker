@@ -14,6 +14,7 @@ const bodyParser = require('body-parser');
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/project');
 const taskRoutes = require('./routes/taskRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -47,6 +48,7 @@ app.use('/api', authRoutes);
 app.use('/api/projects', authMiddleware);
 app.use('/api/projects', projectRoutes);
 app.use('/api', require('./routes/taskRoutes')); 
+app.use('/api/users', userRoutes);
 
 // Start the server
 app.listen(PORT, () => {
