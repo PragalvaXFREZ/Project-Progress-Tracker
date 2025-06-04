@@ -1,6 +1,5 @@
 const axios = require('axios');
 
-// This is the Google Chat webhook URL you shared
 const GOOGLE_CHAT_WEBHOOK = 'https://chat.googleapis.com/v1/spaces/AAQAIEyDCSs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=0vMOCQfMNVicfKr21ExywZxAHCVF4ygdB9MPb9BaRsc';
 
 // Send message to Google Chat

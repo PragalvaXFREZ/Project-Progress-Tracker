@@ -205,18 +205,19 @@ const UserDashboard = () => {
                           <p><strong>Deadline:</strong> {new Date(task.deadline).toLocaleDateString()}</p>
                           <div className="task-status">
                             <label>Status: </label>
-                            {task.status === 'accepted' ? (
-                              <span className="status-badge accepted">Accepted</span>
+                            {task.status === 'completed' ? (
+                              <span className={`status-badge ${task.status}`}>
+                                {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                              </span>
                             ) : (
                               <select
-                                value={task.status}
+                                value={task.status === 'rejected' ? 'pending' : task.status}
                                 onChange={(e) => handleStatusUpdate(task._id, e.target.value)}
-                                disabled={selectedProject?.status === 'completed' || task.status === 'accepted'}
+                                disabled={selectedProject?.status === 'completed'}
                               >
                                 <option value="pending">Pending</option>
                                 <option value="in-progress">In Progress</option>
                                 <option value="review">In Review</option>
-                                {task.status === 'accepted' && <option value="accepted">Accepted</option>}
                               </select>
                             )}
                           </div>

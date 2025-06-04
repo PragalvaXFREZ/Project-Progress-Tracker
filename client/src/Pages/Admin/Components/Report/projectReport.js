@@ -9,7 +9,7 @@ const ProjectReport = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedTask, setSelectedTask] = useState(null); // Add this line
+  const [selectedTask, setSelectedTask] = useState(null); 
   const { projectId } = useParams();
   const navigate = useNavigate();
 
@@ -211,10 +211,6 @@ const ProjectReport = () => {
               <div className="status-item completed">
                 <span className="status-count">{report.taskStatus.completed}</span>
                 <span className="status-label">Completed</span>
-              </div>
-              <div className="status-item accepted">
-                <span className="status-count">{report.taskStatus.accepted}</span>
-                <span className="status-label">Accepted</span>
               </div>
             </div>
           </div>
